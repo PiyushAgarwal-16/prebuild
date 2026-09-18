@@ -1,69 +1,64 @@
 import { create } from "zustand";
-import type { TimeOfDay } from "../types";
+import type { LevelBand } from "../types";
+import { BAND_ORDER } from "../lib/ulpin";
 
-export type View = "dashboard" | "editor";
-export type RightTab = "properties" | "materials" | "versions";
-export type TransformMode = "translate" | "rotate" | "scale";
+export type Page = "workspace" | "registry";
+export type Workspace = "split" | "map" | "model";
+export type ColorBy = "use" | "tenure";
+
+const allBands = (): Record<LevelBand, boolean> =>
+  Object.fromEntries(BAND_ORDER.map((b) => [b, true])) as Record<LevelBand, boolean>;
 
 interface UIStore {
-  view: View;
-  presenting: boolean;
-  rightTab: RightTab;
-  transformMode: TransformMode;
-  shareOpen: boolean;
-  exportOpen: boolean;
-  variationsOpen: boolean;
-  planOpen: boolean;
+  page: Page;
+  workspace: Workspace;
+  colorBy: ColorBy;
+  explode: number;
+  bands: Record<LevelBand, boolean>;
+  drawing: boolean;
+  importOpen: boolean;
+  newVolumeOpen: boolean;
+  certificateFor: string | null;
   toast: { id: number; message: string } | null;
 
-  setView: (v: View) => void;
-  setPresenting: (p: boolean) => void;
-  setRightTab: (t: RightTab) => void;
-  setTransformMode: (m: TransformMode) => void;
-  openShare: () => void;
-  closeShare: () => void;
-  toggleExport: (open?: boolean) => void;
-  setVariationsOpen: (o: boolean) => void;
-  openPlan: () => void;
-  closePlan: () => void;
+  setPage: (p: Page) => void;
+  setWorkspace: (w: Workspace) => void;
+  setColorBy: (c: ColorBy) => void;
+  setExplode: (v: number) => void;
+  toggleBand: (b: LevelBand) => void;
+  setDrawing: (d: boolean) => void;
+  setImportOpen: (o: boolean) => void;
+  setNewVolumeOpen: (o: boolean) => void;
+  setCertificateFor: (id: string | null) => void;
   showToast: (message: string) => void;
-
-  presentationTime: TimeOfDay;
-  setPresentationTime: (t: TimeOfDay) => void;
 }
 
 let toastId = 0;
 
 export const useUI = create<UIStore>((set) => ({
-  view: "dashboard",
-  presenting: false,
-  rightTab: "properties",
-  transformMode: "translate",
-  shareOpen: false,
-  exportOpen: false,
-  variationsOpen: false,
-  planOpen: false,
+  page: "workspace",
+  workspace: "split",
+  colorBy: "use",
+  explode: 0,
+  bands: allBands(),
+  drawing: false,
+  importOpen: false,
+  newVolumeOpen: false,
+  certificateFor: null,
   toast: null,
 
-  setView: (view) => set({ view }),
-  setPresenting: (presenting) => set({ presenting, exportOpen: false }),
-  setRightTab: (rightTab) => set({ rightTab }),
-  setTransformMode: (transformMode) => set({ transformMode }),
-  openShare: () => set({ shareOpen: true }),
-  closeShare: () => set({ shareOpen: false }),
-  toggleExport: (open) =>
-    set((s) => ({ exportOpen: open ?? !s.exportOpen })),
-  setVariationsOpen: (variationsOpen) => set({ variationsOpen }),
-  openPlan: () => set({ planOpen: true }),
-  closePlan: () => set({ planOpen: false }),
+  setPage: (page) => set({ page }),
+  setWorkspace: (workspace) => set({ workspace }),
+  setColorBy: (colorBy) => set({ colorBy }),
+  setExplode: (explode) => set({ explode }),
+  toggleBand: (b) => set((s) => ({ bands: { ...s.bands, [b]: !s.bands[b] } })),
+  setDrawing: (drawing) => set({ drawing }),
+  setImportOpen: (importOpen) => set({ importOpen }),
+  setNewVolumeOpen: (newVolumeOpen) => set({ newVolumeOpen }),
+  setCertificateFor: (certificateFor) => set({ certificateFor }),
   showToast: (message) => {
     const id = ++toastId;
     set({ toast: { id, message } });
-    setTimeout(() => {
-      set((s) => (s.toast?.id === id ? { toast: null } : s));
-    }, 2600);
+    setTimeout(() => set((s) => (s.toast?.id === id ? { toast: null } : s)), 2800);
   },
-
-  presentationTime: "day",
-  setPresentationTime: (presentationTime) => set({ presentationTime }),
 }));

@@ -212,3 +212,72 @@ export function PrebuildMark({ size = 20 }: { size?: number }) {
     </svg>
   );
 }
+
+export const IconPolygon = (p: IconProps) => (
+  <S {...p}>
+    <path d="M12 3l8 5.5-3 11H7l-3-11z" />
+  </S>
+);
+
+export const IconLayers = (p: IconProps) => (
+  <S {...p}>
+    <path d="M12 3l9 5-9 5-9-5z" />
+    <path d="M3 13l9 5 9-5" />
+  </S>
+);
+
+export const IconMap = (p: IconProps) => (
+  <S {...p}>
+    <path d="M9 4L3 6.5v13L9 17l6 3 6-2.5v-13L15 7z" />
+    <path d="M9 4v13M15 7v13" />
+  </S>
+);
+
+export const IconAlert = (p: IconProps) => (
+  <S {...p}>
+    <path d="M12 4l9 16H3z" />
+    <path d="M12 10v4.5M12 17.6v.01" />
+  </S>
+);
+
+export const IconDocument = (p: IconProps) => (
+  <S {...p}>
+    <path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z" />
+    <path d="M14 3v4h4M9 12h6M9 16h4" />
+  </S>
+);
+
+export const IconTrash = (p: IconProps) => (
+  <S {...p}>
+    <path d="M4 6h16M9 6V4h6v2M6 6l1 14h10l1-14" />
+  </S>
+);
+
+export const IconUpload = (p: IconProps) => (
+  <S {...p}>
+    <path d="M12 16V4M8 8l4-4 4 4" />
+    <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
+  </S>
+);
+
+export const IconRefresh = (p: IconProps) => (
+  <S {...p}>
+    <path d="M20 11a8 8 0 1 0-1.8 6" />
+    <path d="M20 4v7h-7" />
+  </S>
+);
+
+export const IconSplit = (p: IconProps) => (
+  <S {...p}>
+    <rect x="3" y="4" width="18" height="16" rx="1.5" />
+    <path d="M12 4v16" />
+  </S>
+);
+
+export const IconStack = (p: IconProps) => (
+  <S {...p}>
+    <rect x="4" y="15" width="16" height="5" rx="1" />
+    <rect x="4" y="9" width="16" height="4" rx="1" />
+    <rect x="7" y="3" width="10" height="4" rx="1" />
+  </S>
+);

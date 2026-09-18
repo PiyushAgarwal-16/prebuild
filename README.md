@@ -1,82 +1,213 @@
-# Prebuild
+<div align="center">
 
-Premium architectural visualization studio in the browser. Describe a design, import a 2D floor plan, or build by hand — then present it.
+# ULPIN 3D
 
-**Stack:** React · TypeScript · Vite · Tailwind CSS v4 · React Three Fiber (three.js) · Zustand
+### Unique land parcel identity for a city that grew upwards.
 
-## Run
+*Geocoded 3D ULPIN generation, vertical property mapping and stratified-title conflict detection — MapLibre · three.js · ISO 7064 MOD 37,36 · GeoJSON (CRS84)*
 
-```bash
-npm install
-npm run dev        # http://localhost:5180
-```
+![React](https://img.shields.io/badge/React-18.3-1c1a17?style=flat-square)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.6-1c1a17?style=flat-square)
+![MapLibre GL](https://img.shields.io/badge/MapLibre_GL-6.10-1c1a17?style=flat-square)
+![three.js](https://img.shields.io/badge/three.js-r169-1c1a17?style=flat-square)
+![Basemap](https://img.shields.io/badge/basemap-OpenStreetMap-1c1a17?style=flat-square)
 
-Optional — create `.env` from `.env.example` for direct API keys:
+</div>
 
-```
-VITE_GEMINI_API_KEY=...
-VITE_OPENAI_API_KEY=...      # also enables vision fallbacks
-VITE_ANTHROPIC_API_KEY=...
-```
+## What is ULPIN 3D?
+
+Conventional land records identify a *surface* parcel. They cannot say who owns the 3.2 m of air between 23.7 m and 26.9 m above that parcel, which is where an apartment actually exists. The same gap swallows basement parking, metro viaducts, subsurface utility corridors, rooftop solar rights and transferable development rights — all of which are bought, sold, mortgaged and litigated as if they were land, while the register describes only the ground beneath them.
+
+ULPIN 3D treats the surface parcel as a root identity and issues every legally distinct **volume** above and below it its own identifier. A volume is a footprint polygon plus an elevation range, a use class, a tenure type and a right holder. Because identity is generated from geometry, two claims to the same cubic metres are detectable arithmetically rather than by reading deeds.
+
+Three ways in:
+
+- **Map** — real OpenStreetMap basemap, surveyed parcels as cadastral polygons, strata extruded at true elevation; draw a new parcel and it is assigned a base ULPIN on the spot.
+- **Model** — an analytic 3D view of one parcel's stack, explodable floor-by-floor, colour-coded by use or tenure, with conflicting volumes outlined in red.
+- **Registry** — a searchable register of every volume, plus an offline validator that verifies any 3D ULPIN's check character and recovers its parcel centroid from the identifier alone.
+
+> The identifier is not a database key. The 14-character root encodes the parcel centroid to ~15 cm as a geohash, and the vertical extension encodes the band, level and unit — so a 3D ULPIN can be validated and geographically located with no network, no lookup and no registry access.
 
 ## Features
 
-### Design creation
-- **AI commands** — natural-language edits ("make the walls walnut", "add a kitchen along the north wall", "design a modern villa with a pool"). Whole-design requests generate a full layout; targeted edits apply constructive ops (add/move/material/visibility) atomically.
-- **2D plan import** — drop a floor-plan image; vision models read rooms/walls/openings and build the 3D scene.
-- **Manual building** — Add menu (top toolbar) inserts furniture, kitchen, bathroom, lighting and structural objects at your view center. Move / rotate / scale via gizmo or numeric inputs. Duplicate & delete from Properties.
-- **Materials** — 26 procedural materials (marble, walnut, terrazzo, brass, fabrics…) applied per-object or globally; per-material color/roughness/metalness/opacity overrides.
+### Identity generation
 
-### Scene management
-- **Hierarchy tree** — live sidebar listing every object grouped by category (floors, architecture, interior), click to select, eye to hide.
-- **Version history** — auto-committed checkpoints with thumbnails; hover to peek, restore any version (undoable).
-- **Undo/redo** — full snapshot stack (⌘Z / ⇧⌘Z).
-- **Project naming** — click the project name in the top bar to rename.
+- **Geocoded base ULPIN** — 14 characters: 2-digit LGD state code + 11-character geohash of the parcel centroid + ISO 7064 MOD 37,36 check character.
+- **Vertical extension** — appends band, level and unit to the surface root, keeping the existing parcel identity intact and human-readable.
+- **Self-validating** — single-character corruption and adjacent transposition are both caught by the check character; validation needs no registry.
+- **Reversible geocode** — `baseCentroid()` decodes the embedded geohash back to a coordinate, so an identifier alone locates its parcel.
 
-### Presentation & export
-- **Preview mode** — day / sunset / night client view with smooth light transitions.
-- **Share link** modal.
-- **Exports** (all real downloads):
-  - PNG of current viewport
-  - High-res render (2.5×)
-  - Standalone HTML presentation deck
-  - GLB 3D model (opens in Blender, three.js, etc.)
+### Vertical property mapping
 
-## AI engines
+- **Volumetric parcels** — every stratum carries a footprint ring, `zMin`/`zMax` relative to a ground datum in m MSL, carpet and built-up area.
+- **Six vertical bands** — subsurface, basement, ground, floor, airspace and elevated corridor, each independently visible.
+- **True-elevation rendering** — the same volumes drawn as extruded footprints on the map and as an explodable stack in the 3D model view.
+- **Tenure-aware** — freehold, leasehold, easement, air rights, government and common holdings are distinct classes, not a text field.
 
-Configured in Settings (gear icon). Priority order is respected per request; image understanding tries all ready vision providers.
+### Conflict detection
 
-| Type | Engines | Notes |
+- **3D overlap** — two volumes conflict only when their footprints intersect *and* their elevation ranges overlap; the overlap area is measured, not guessed.
+- **Tenure-sensitive severity** — two exclusive claims to the same cubic metres are critical; an easement crossing a freehold volume is a servitude to be recorded, not an error.
+- **Encroachment** — a volume extending beyond its parent parcel's surface boundary is flagged.
+- **Register integrity** — duplicate identifiers, failed check characters and inverted extents are all surfaced.
+
+### Interchange
+
+| Export | Format | Contents |
 |---|---|---|
-| Cloud API | Gemini · OpenAI · Anthropic | key required |
-| Local CLI agents | `opencode run` · `claude -p` | detected automatically via `/api/cli-check`; images passed as temp files |
+| GeoJSON | `application/geo+json`, CRS84 | Parcels and strata as polygons; strata carry `z_min`, `z_max`, tenure, holder, encumbrance |
+| CSV | `text/csv` | One row per registered volume, 16 columns, for spreadsheet-based registers |
+| GLB | `model/gltf-binary` | The strata stack as a 3D model for Blender, CesiumJS or a viewer |
+| PNG | `image/png` | 2× render of the 3D view |
+| Property card | Standalone HTML | Printable per-volume record with the full ULPIN breakdown, extents and recorded conflicts |
 
-If every engine fails, a local rules engine still handles common requests (kitchens, second floors, material swaps).
+Import accepts any GeoJSON `FeatureCollection`. Polygon features become parcels and are assigned a base ULPIN; features carrying `ulpin`, `z_min` or `feature_kind: "stratum"` are registered as volumes under whichever parcel contains their centroid.
+
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph identity["lib/ — pure domain, no React"]
+        GEO[geo.ts<br/>projection · geohash · polygon ops]
+        ULP[ulpin.ts<br/>encode · parse · ISO 7064 check]
+        CON[conflicts.ts<br/>3D overlap · encroachment]
+        GJ[geojson.ts<br/>import · export]
+        SEED[seed.ts<br/>Bengaluru sample site]
+    end
+
+    subgraph state["store/ — zustand"]
+        REG[registry.ts<br/>parcels · strata · conflicts<br/>localStorage]
+        UI[ui.ts<br/>page · bands · explode]
+    end
+
+    subgraph views["components/"]
+        MAP[map/MapView<br/>MapLibre GL]
+        SCN[scene/StrataScene<br/>react-three-fiber]
+        PAN[panels/ · registry/<br/>inspector · register · validator]
+    end
+
+    GEO --> ULP --> CON
+    GEO --> GJ
+    ULP --> SEED
+    SEED --> REG
+    CON --> REG
+    GJ --> REG
+    REG --> MAP & SCN & PAN
+    UI --> MAP & SCN & PAN
+    MAP -->|select / draw| REG
+    SCN -->|select| REG
+    REG --> EXP[lib/exporters.ts<br/>GeoJSON · CSV · GLB · PNG · card]
+```
+
+| Component | Role | Backed by |
+|---|---|---|
+| `lib/ulpin.ts` | Identifier generation, parsing, check characters | ISO 7064 MOD 37,36, geohash base-32 |
+| `lib/geo.ts` | Local ENU projection, areas, centroids, polygon intersection | Equirectangular projection about a local origin |
+| `lib/conflicts.ts` | Volumetric conflict rules and severity | Footprint intersection × elevation overlap |
+| `store/registry.ts` | Single source of truth; recomputes conflicts on every write | zustand + `localStorage` |
+| `components/map/MapView.tsx` | Basemap, cadastral polygons, `fill-extrusion` strata, polygon drawing | MapLibre GL 6 + OpenStreetMap raster tiles |
+| `components/scene/StrataScene.tsx` | Extruded legal volumes, selection, explode, GLB registry | three.js `ExtrudeGeometry` via react-three-fiber |
+
+## ULPIN anatomy
+
+`29TDR1V9QTJ1XH-F07-002-1`
+
+| Segment | Example | Width | Meaning |
+|---|---|---|---|
+| State | `29` | 2 | LGD state code (29 = Karnataka) |
+| Geocode | `TDR1V9QTJ1X` | 11 | Geohash of the parcel centroid, ≈15 cm resolution |
+| Root check | `H` | 1 | ISO 7064 MOD 37,36 over the 13 preceding characters |
+| Level | `F07` | 3 | Band letter + two-digit level |
+| Unit | `002` | 3 | Base-36 unit within that level |
+| Check | `1` | 1 | ISO 7064 MOD 37,36 over the whole identifier |
+
+| Band | Code | Covers |
+|---|---|---|
+| Subsurface | `S` | Utility corridors, water mains, cable ducts below basement level |
+| Basement | `B` | Basement parking and plant levels, numbered downwards |
+| Ground | `G` | Surface-level retail, concourse, carriageway |
+| Floor | `F` | Habitable and commercial storeys, numbered upwards |
+| Airspace | `A` | Air rights, TDR columns, rooftop solar rights |
+| Elevated | `E` | Viaducts, skywalks and elevated corridors crossing the parcel |
+
+## Conflict rules
+
+| Rule | Trigger | Severity |
+|---|---|---|
+| `volume-overlap` | Footprints intersect (> 0.5 m²) and elevation ranges overlap (> 1 cm), both tenures exclusive | critical |
+| `volume-overlap` | Same geometric test, but one side is an easement or common holding | warning — record as servitude |
+| `outside-parcel` | A stratum footprint vertex falls outside its parent parcel boundary | critical |
+| `duplicate-ulpin` | Two volumes share an identifier | critical |
+| `invalid-ulpin` | Check character fails validation | critical |
+| `inverted-extent` | `zMax ≤ zMin` | warning |
+
+Exclusive tenures are freehold, leasehold, government and air rights. Easement and common holdings are expected to overlap and are recorded as servitudes.
 
 ## Project structure
 
 ```
 src/
+  types.ts                      # Parcel, Stratum, Conflict, UlpinParts
+  lib/
+    geo.ts                      # projection, geohash, centroid, area, intersection
+    ulpin.ts                    # base + vertical ULPIN, ISO 7064 check characters
+    conflicts.ts                # volumetric conflict detection
+    geojson.ts                  # GeoJSON import / export
+    exporters.ts                # GeoJSON, CSV, GLB, PNG, property card
+    palette.ts                  # use / tenure / band colours
+    seed.ts                     # sample site: tower, metro corridor, tech park
+  store/
+    registry.ts                 # parcels, strata, derived conflicts, persistence
+    ui.ts                       # page, workspace mode, band filters, explode, toasts
   components/
-    dashboard/       project cards, new project flow
-    editor/          TopBar, LeftSidebar (live tree), RightPanel (properties/
-                     materials/versions), AIBar, PlanImportModal, SettingsModal,
-                     modals, AddMenu
-    viewport/        Viewport (canvas, lighting presets, snapshot bridge),
-                     VillaScene (scene nodes, gizmo, part meshes, spawn point)
-  lib/               templates (object catalog), materials data, plans (layout
-                     parsing/building), llm (multi-engine dispatch), exporters
-  scene/             initial villa scene
-  store/             scene (objects/selection/history), ai (ops engine),
-                     settings (persisted keys/providers), ui
-  types/
-vite.config.ts      includes CLI bridge plugin (/api/cli-check, /api/cli-agent,
-                    /api/upload-image)
+    TopBar.tsx                  # mode switching, survey, import, export menu
+    modals.tsx                  # import, new volume, property card, toast
+    icons.tsx                   # inline SVG icon set
+    map/MapView.tsx             # MapLibre basemap, parcels, extrusions, drawing
+    scene/Viewport3D.tsx        # canvas, lighting, camera framing, snapshots
+    scene/StrataScene.tsx       # extruded volumes, selection, explode, labels
+    panels/ParcelPanel.tsx      # parcel list, band filters, strata stack
+    panels/InspectorPanel.tsx   # ULPIN card, attributes, conflicts, actions
+    registry/RegistryPage.tsx   # register table, search, offline validator
 ```
 
-## Notes & caveats
+## Setup
 
-- Dev server port is fixed at **5180** (`--strictPort`).
-- CLI-agent tasks can take minutes for heavy generations; timeouts are ~5 min on both bridge and client.
-- GLB export includes only currently visible objects.
-- Version thumbnails require `preserveDrawingBuffer` (enabled in the Canvas config).
+```bash
+npm install
+npm run dev        # http://localhost:5180
+npm run build      # type-check + production bundle
+npm run preview    # serve the production build
+```
+
+No environment variables and no API keys are required. The basemap uses OpenStreetMap raster tiles directly, so the map needs network access; every other part of the application — identifier generation, conflict detection, the registry and all exports — works offline.
+
+`vite.config.ts` excludes `maplibre-gl` from Vite's dependency pre-bundling. This is required: the pre-bundled worker never completes GeoJSON source loads, which silently leaves the map empty.
+
+## Data & trust
+
+- The registry is held in the browser's `localStorage` under `ulpin3d.registry.v2`. Nothing is transmitted to a server; there is no backend.
+- The sample dataset is fictional. Parcels, holders, survey numbers and the pending suit are invented and placed over a real Bengaluru location for demonstration.
+- Generated identifiers follow the documented scheme in this repository. They are structurally compatible with a 14-character surface ULPIN but are **not** issued under, or verified against, any government register, and the exported property card is not a legal instrument.
+
+## Status
+
+| Area | State | How it was checked |
+|---|---|---|
+| ULPIN encode / decode / validation | Verified | 17 assertions: determinism, corruption and transposition detection, centroid recovery within 1 m, collision-free across 328 identifiers |
+| Geometry (area, centroid, intersection) | Verified | Assertions against known rectangles; centroid precision fix confirmed for 4 × 9 m footprints |
+| Conflict detection | Verified | Runs against the sample registry: 1 critical title dispute, 2 servitude warnings, no false positives |
+| GeoJSON round-trip | Verified | Export → re-import reproduces 3 parcels and all 44 volumes with no losses or malformed identifiers |
+| Map, 3D view, panels, registry | Verified | Headless-browser runs against dev and production builds: no console errors, strata render in both views, selection and explode behave |
+| Parcel drawing, property card, exports | Verified | Driven in a headless browser: drawn parcel received a valid base ULPIN; card and GeoJSON download correctly |
+| Cross-browser / mobile | Not verified | Only Chromium at desktop widths has been exercised |
+| Scale beyond the sample dataset | Not verified | Conflict detection is O(n²) over volumes; untested above ~90 volumes |
+| Accessibility | Not verified | No keyboard-navigation or screen-reader audit has been done |
+
+## License
+
+No licence file is committed to this repository yet.
+
+<div align="center">
+<sub>Built with <a href="https://maplibre.org/">MapLibre GL JS</a> · <a href="https://threejs.org/">three.js</a> · <a href="https://r3f.docs.pmnd.rs/">React Three Fiber</a> · <a href="https://zustand.docs.pmnd.rs/">zustand</a> · <a href="https://vite.dev/">Vite</a> · basemap © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors</sub>
+</div>
