@@ -44,6 +44,14 @@ Three ways in:
 - **True-elevation rendering** — the same volumes drawn as extruded footprints on the map and as an explodable stack in the 3D model view.
 - **Tenure-aware** — freehold, leasehold, easement, air rights, government and common holdings are distinct classes, not a text field.
 
+### Plan digitisation (AI)
+
+- **Floor plan → vertical parcels** — drop a floor-plan image; a vision model returns every separately owned space on the floor (flats, shops, lift cores, service rooms, parking bays) as metric rectangles.
+- **Georeferencing** — extracted spaces are scaled to fit the parcel, rotated to the building's true orientation and converted to lat/long footprints, so a drawing becomes cadastral geometry.
+- **Multi-storey replication** — digitise one typical floor and stamp it across N storeys; each unit on each floor receives its own 3D ULPIN.
+- **Topology validation on import** — units that fall outside the parcel are counted before you commit, and anything that still overlaps is caught by the conflict engine afterwards.
+- **Runs without a key** — a built-in sample plan exercises placement, replication and identifier generation when no vision engine is configured.
+
 ### Conflict detection
 
 - **3D overlap** — two volumes conflict only when their footprints intersect *and* their elevation ranges overlap; the overlap area is measured, not guessed.
@@ -73,6 +81,11 @@ flowchart TD
         CON[conflicts.ts<br/>3D overlap · encroachment]
         GJ[geojson.ts<br/>import · export]
         SEED[seed.ts<br/>Bengaluru sample site]
+        PLAN[plan.ts<br/>plan units · georeferencing]
+    end
+
+    subgraph bridge["vite.config.ts — dev server only"]
+        NIM[/api/extract-plan<br/>NVIDIA NIM vision proxy/]
     end
 
     subgraph state["store/ — zustand"]
@@ -88,12 +101,15 @@ flowchart TD
 
     GEO --> ULP --> CON
     GEO --> GJ
+    GEO --> PLAN
     ULP --> SEED
+    NIM --> PLAN --> REG
     SEED --> REG
     CON --> REG
     GJ --> REG
     REG --> MAP & SCN & PAN
     UI --> MAP & SCN & PAN
+    PAN -->|floor plan image| NIM
     MAP -->|select / draw| REG
     SCN -->|select| REG
     REG --> EXP[lib/exporters.ts<br/>GeoJSON · CSV · GLB · PNG · card]
@@ -104,6 +120,7 @@ flowchart TD
 | `lib/ulpin.ts` | Identifier generation, parsing, check characters | ISO 7064 MOD 37,36, geohash base-32 |
 | `lib/geo.ts` | Local ENU projection, areas, centroids, polygon intersection | Equirectangular projection about a local origin |
 | `lib/conflicts.ts` | Volumetric conflict rules and severity | Footprint intersection × elevation overlap |
+| `lib/plan.ts` | Floor-plan units → georeferenced volumes, scale/rotation fitting | Pure geometry; model output is normalised and clamped |
 | `store/registry.ts` | Single source of truth; recomputes conflicts on every write | zustand + `localStorage` |
 | `components/map/MapView.tsx` | Basemap, cadastral polygons, `fill-extrusion` strata, polygon drawing | MapLibre GL 6 + OpenStreetMap raster tiles |
 | `components/scene/StrataScene.tsx` | Extruded legal volumes, selection, explode, GLB registry | three.js `ExtrudeGeometry` via react-three-fiber |
@@ -155,6 +172,7 @@ src/
     geojson.ts                  # GeoJSON import / export
     exporters.ts                # GeoJSON, CSV, GLB, PNG, property card
     palette.ts                  # use / tenure / band colours
+    plan.ts                     # floor-plan units, georeferencing, extraction prompt
     seed.ts                     # sample site: tower, metro corridor, tech park
   store/
     registry.ts                 # parcels, strata, derived conflicts, persistence
@@ -162,6 +180,7 @@ src/
   components/
     TopBar.tsx                  # mode switching, survey, import, export menu
     modals.tsx                  # import, new volume, property card, toast
+    PlanImportModal.tsx         # floor-plan digitisation: extract, place, replicate
     icons.tsx                   # inline SVG icon set
     map/MapView.tsx             # MapLibre basemap, parcels, extrusions, drawing
     scene/Viewport3D.tsx        # canvas, lighting, camera framing, snapshots
@@ -180,7 +199,16 @@ npm run build      # type-check + production bundle
 npm run preview    # serve the production build
 ```
 
-No environment variables and no API keys are required. The basemap uses OpenStreetMap raster tiles directly, so the map needs network access; every other part of the application — identifier generation, conflict detection, the registry and all exports — works offline.
+Identifier generation, conflict detection, the registry and every export work with no configuration at all. Two optional variables enable AI plan digitisation:
+
+| Variable | Required for | Notes |
+|---|---|---|
+| `NVIDIA_API_KEY` | Floor-plan extraction | Read by the **dev server only** and never sent to the browser. Without it the modal says so and the sample plan still works. |
+| `NVIDIA_BASE_URL` | Testing / alternate endpoints | Defaults to `https://integrate.api.nvidia.com/v1`. |
+
+Set the key in a gitignored `.env` (`.env` is already ignored) or export it before `npm run dev`. Extraction is proxied through the Vite dev server at `/api/extract-plan` so the key stays server-side — which also means **plan extraction is unavailable in `npm run preview` and in a static production deploy**; that path would need a real backend or serverless function.
+
+The basemap uses OpenStreetMap raster tiles directly, so the map needs network access.
 
 `vite.config.ts` excludes `maplibre-gl` from Vite's dependency pre-bundling. This is required: the pre-bundled worker never completes GeoJSON source loads, which silently leaves the map empty.
 
@@ -200,6 +228,9 @@ No environment variables and no API keys are required. The basemap uses OpenStre
 | GeoJSON round-trip | Verified | Export → re-import reproduces 3 parcels and all 44 volumes with no losses or malformed identifiers |
 | Map, 3D view, panels, registry | Verified | Headless-browser runs against dev and production builds: no console errors, strata render in both views, selection and explode behave |
 | Parcel drawing, property card, exports | Verified | Driven in a headless browser: drawn parcel received a valid base ULPIN; card and GeoJSON download correctly |
+| Plan georeferencing | Verified | 11 assertions: areas match the plan within 0.01%, rotation preserves area, units never overlap, oversized plans are flagged, malformed model output is dropped |
+| Plan extraction pipeline | Verified against a mock | Full browser run through a stand-in OpenAI-compatible endpoint: fenced JSON, `reasoning_content`-only and non-JSON replies all handled; 3 units × 3 floors registered with unique ULPINs |
+| Live NVIDIA NIM vision call | **Not verified** | No API key was available in this environment. The request shape (model, text + `image_url` parts, auth header) was confirmed on the wire against a mock, but `moonshotai/kimi-k2.6` has never actually been called, and real floor-plan extraction quality is unmeasured |
 | Cross-browser / mobile | Not verified | Only Chromium at desktop widths has been exercised |
 | Scale beyond the sample dataset | Not verified | Conflict detection is O(n²) over volumes; untested above ~90 volumes |
 | Accessibility | Not verified | No keyboard-navigation or screen-reader audit has been done |

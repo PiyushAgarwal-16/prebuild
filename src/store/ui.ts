@@ -18,6 +18,7 @@ interface UIStore {
   drawing: boolean;
   importOpen: boolean;
   newVolumeOpen: boolean;
+  planOpen: boolean;
   certificateFor: string | null;
   toast: { id: number; message: string } | null;
 
@@ -29,6 +30,7 @@ interface UIStore {
   setDrawing: (d: boolean) => void;
   setImportOpen: (o: boolean) => void;
   setNewVolumeOpen: (o: boolean) => void;
+  setPlanOpen: (o: boolean) => void;
   setCertificateFor: (id: string | null) => void;
   showToast: (message: string) => void;
 }
@@ -44,6 +46,7 @@ export const useUI = create<UIStore>((set) => ({
   drawing: false,
   importOpen: false,
   newVolumeOpen: false,
+  planOpen: false,
   certificateFor: null,
   toast: null,
 
@@ -55,6 +58,7 @@ export const useUI = create<UIStore>((set) => ({
   setDrawing: (drawing) => set({ drawing }),
   setImportOpen: (importOpen) => set({ importOpen }),
   setNewVolumeOpen: (newVolumeOpen) => set({ newVolumeOpen }),
+  setPlanOpen: (planOpen) => set({ planOpen }),
   setCertificateFor: (certificateFor) => set({ certificateFor }),
   showToast: (message) => {
     const id = ++toastId;

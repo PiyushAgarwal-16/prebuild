@@ -5,6 +5,7 @@ import { ParcelPanel } from "./components/panels/ParcelPanel";
 import { InspectorPanel } from "./components/panels/InspectorPanel";
 import { RegistryPage } from "./components/registry/RegistryPage";
 import { CertificateModal, ImportModal, NewVolumeModal, Toast } from "./components/modals";
+import { PlanImportModal } from "./components/PlanImportModal";
 import { useUI } from "./store/ui";
 
 const HALF = "w-[calc(50%-6px)]";
@@ -52,6 +53,7 @@ export default function App() {
 
       <ImportModal />
       <NewVolumeModal />
+      <PlanImportModal />
       <CertificateModal />
       <Toast />
     </div>

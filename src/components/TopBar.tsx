@@ -12,6 +12,7 @@ import {
   IconPlus,
   IconPolygon,
   IconRefresh,
+  IconSparkle,
   IconSplit,
   IconUpload,
 } from "./icons";
@@ -61,6 +62,7 @@ export function TopBar() {
   const drawing = useUI((s) => s.drawing);
   const setImportOpen = useUI((s) => s.setImportOpen);
   const setNewVolumeOpen = useUI((s) => s.setNewVolumeOpen);
+  const setPlanOpen = useUI((s) => s.setPlanOpen);
   const showToast = useUI((s) => s.showToast);
 
   const [exportOpen, setExportOpen] = useState(false);
@@ -157,6 +159,9 @@ export function TopBar() {
         </Button>
         <Button onClick={() => setNewVolumeOpen(true)} title="Register a new vertical volume">
           <IconPlus size={13} /> Volume
+        </Button>
+        <Button onClick={() => setPlanOpen(true)} title="Digitise a floor plan into vertical volumes">
+          <IconSparkle size={13} /> Floor plan
         </Button>
         <Button onClick={() => setImportOpen(true)} title="Import GeoJSON">
           <IconUpload size={13} /> Import
