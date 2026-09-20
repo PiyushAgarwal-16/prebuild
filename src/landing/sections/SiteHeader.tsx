@@ -49,12 +49,17 @@ export function SiteHeader({ active }: { active: string }) {
             </a>
           ))}
         </div>
-        <Link className="nav-cta" to="/app">
-          <svg className="arrow" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 12h15m-6-6 6 6-6 6" />
-          </svg>
-          Open the workspace
-        </Link>
+        <div className="nav-actions">
+          <Link className="nav-cta" to="/app/registry">
+            Registry
+          </Link>
+          <Link className="nav-cta" to="/app">
+            <svg className="arrow" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 12h15m-6-6 6 6-6 6" />
+            </svg>
+            Workspace
+          </Link>
+        </div>
       </nav>
     </header>
   );

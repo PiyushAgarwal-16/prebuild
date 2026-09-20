@@ -430,3 +430,9 @@
     transition: none !important;
   }
 }
+
+@media (max-width: 700px) {
+  .landing-root .nav-actions {
+    gap: 12px;
+  }
+}

@@ -44,6 +44,7 @@ function makeParcel(
   return {
     id,
     ulpinBase: generateBase(KARNATAKA.stateCode, center),
+    ulpinSource: "generated",
     ring,
     surveyNumber,
     jurisdiction: KARNATAKA,

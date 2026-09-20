@@ -60,6 +60,11 @@
 .landing-root .nav-links a.active {
   color: #a79cff;
 }
+.landing-root .nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
 .landing-root .nav-cta {
   display: flex;
   align-items: center;

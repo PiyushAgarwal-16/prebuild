@@ -6,10 +6,11 @@ import { BAND_LABEL, BAND_ORDER, describeLevel } from "../../lib/ulpin";
 import { formatArea, ringAreaM2 } from "../../lib/geo";
 import { BAND_TINT, TENURE_COLOR, USE_COLOR } from "../../lib/palette";
 import { IconEye, IconEyeOff, IconStack } from "../icons";
+import { fieldLabelBase, sectionLabelClass } from "../ui/primitives";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="px-3 pb-2 pt-3 font-mono text-[9px] uppercase tracking-[0.16em] text-faint">
+    <div className={`px-3 pb-2 pt-3 ${sectionLabelClass}`}>
       {children}
     </div>
   );
@@ -55,6 +56,12 @@ export function ParcelPanel() {
     <aside className="flex w-[300px] shrink-0 flex-col overflow-hidden rounded-md border border-line bg-surface">
       <SectionLabel>Surface parcels</SectionLabel>
       <div className="max-h-[30%] overflow-y-auto px-2 pb-2">
+        {parcels.length === 0 && (
+          <p className="px-1 pb-1 text-[11px] leading-relaxed text-faint">
+            No parcels yet — use <b className="text-dim">Fetch buildings</b> to pull them from map
+            data.
+          </p>
+        )}
         {parcels.map((p) => {
           const own = strata.filter((s) => s.parcelId === p.id);
           const active = p.id === selectedParcelId;
@@ -106,7 +113,7 @@ export function ParcelPanel() {
 
       <div className="border-t border-line px-3 py-3">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-faint">
+          <span className={sectionLabelClass}>
             Explode stack
           </span>
           <span className="font-mono text-[10px] text-dim">{explode.toFixed(1)}×</span>
@@ -146,7 +153,7 @@ export function ParcelPanel() {
             <div key={band} className="mb-2">
               <div className="flex items-center gap-1.5 px-1 pb-1">
                 <span className="h-1.5 w-1.5 rounded-full" style={{ background: BAND_TINT[band] }} />
-                <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-dim">
+                <span className={`${fieldLabelBase} text-dim`}>
                   {BAND_LABEL[band]}
                 </span>
                 <span className="font-mono text-[9px] text-faint">{list.length}</span>

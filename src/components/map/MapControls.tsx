@@ -22,7 +22,7 @@ export function MapControls() {
           <button
             key={id}
             onClick={() => setBasemap(id)}
-            className={`${TOGGLE} ${basemap === id ? "bg-text text-base" : "text-dim hover:text-text"}`}
+            className={`${TOGGLE} ${basemap === id ? "bg-accent text-white" : "text-dim hover:text-text"}`}
           >
             {BASEMAPS[id].label}
           </button>
@@ -31,13 +31,13 @@ export function MapControls() {
       <div className="flex items-center gap-1 rounded-sm border border-line bg-surface/95 p-1 shadow-soft">
         <button
           onClick={() => setFollowRover(!followRover)}
-          className={`${TOGGLE} ${followRover ? "bg-text text-base" : "text-dim hover:text-text"}`}
+          className={`${TOGGLE} ${followRover ? "bg-accent text-white" : "text-dim hover:text-text"}`}
         >
           Follow rover
         </button>
         <button
           onClick={() => setLinked(!linked)}
-          className={`${TOGGLE} ${linked ? "bg-text text-base" : "text-dim hover:text-text"}`}
+          className={`${TOGGLE} ${linked ? "bg-accent text-white" : "text-dim hover:text-text"}`}
         >
           Link views
         </button>

@@ -15,6 +15,7 @@ export function toGeoJSON(parcels: Parcel[], strata: Stratum[]) {
     properties: {
       feature_kind: "parcel",
       ulpin_base: p.ulpinBase,
+      ulpin_source: p.ulpinSource,
       survey_number: p.surveyNumber,
       land_use: p.landUse,
       holder: p.holder,
@@ -146,9 +147,11 @@ function parcelFrom(ring: Ring, props: Record<string, unknown>): Parcel {
   const centroid = ringCentroid(ring);
   const stateCode = str(props.state_code, "29");
   const declared = str(props.ulpin_base, "");
+  const useDeclared = declared.length === 14;
   return {
     id: `parcel-import-${Date.now().toString(36)}-${importCounter++}`,
-    ulpinBase: declared.length === 14 ? declared.toUpperCase() : generateBase(stateCode, centroid),
+    ulpinBase: useDeclared ? declared.toUpperCase() : generateBase(stateCode, centroid),
+    ulpinSource: useDeclared ? "declared" : "generated",
     ring,
     surveyNumber: str(props.survey_number ?? props.survey ?? props.name, "Imported parcel"),
     jurisdiction: {

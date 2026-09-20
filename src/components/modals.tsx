@@ -9,6 +9,7 @@ import { scaleRing } from "../lib/geo";
 import { BAND_LABEL, BAND_ORDER, describeLevel } from "../lib/ulpin";
 import { TENURE_LABEL, USE_LABEL } from "../lib/palette";
 import { IconClose, IconDocument, IconExport, IconUpload } from "./icons";
+import { fieldLabelClass } from "./ui/primitives";
 
 export function Shell({
   title,
@@ -46,7 +47,7 @@ export function Shell({
 
 export const inputClass =
   "mt-1 w-full rounded-sm border border-line bg-base px-2 py-1.5 text-[11px] outline-none focus:border-accent-dim";
-export const labelClass = "font-mono text-[9px] uppercase tracking-[0.14em] text-faint";
+export const labelClass = fieldLabelClass;
 
 export function ImportModal() {
   const open = useUI((s) => s.importOpen);

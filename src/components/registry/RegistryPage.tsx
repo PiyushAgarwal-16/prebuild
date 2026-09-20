@@ -1,15 +1,18 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { verifyUlpin } from "../../registry/client";
+import type { VerifyResult } from "../../registry/types";
 import { useRegistry } from "../../store/registry";
-import { useUI } from "../../store/ui";
 import { baseCentroid, BAND_LABEL, describeLevel, parseUlpin, validateUlpin } from "../../lib/ulpin";
 import { formatLngLat } from "../../lib/geo";
 import { TENURE_COLOR, TENURE_LABEL, USE_COLOR, USE_LABEL } from "../../lib/palette";
 import { IconAlert, IconCheck, IconClose, IconSearch } from "../icons";
+import { fieldLabelClass, sectionLabelClass } from "../ui/primitives";
 
 function ValidatorCard() {
   const strata = useRegistry((s) => s.strata);
   const selectStratum = useRegistry((s) => s.selectStratum);
-  const setPage = useUI((s) => s.setPage);
+  const navigate = useNavigate();
   const [input, setInput] = useState("");
 
   const trimmed = input.trim().toUpperCase();
@@ -17,15 +20,46 @@ function ValidatorCard() {
   const valid = trimmed ? validateUlpin(trimmed) : null;
   const centroid = parts ? baseCentroid(parts.base) : null;
   const match = strata.find((s) => s.ulpin === trimmed);
+  const [official, setOfficial] = useState<VerifyResult | null>(null);
+  const [checking, setChecking] = useState(false);
+
+  useEffect(() => {
+    if (trimmed.length < 8) {
+      setOfficial(null);
+      return;
+    }
+    let cancelled = false;
+    setChecking(true);
+    const timer = setTimeout(() => {
+      verifyUlpin(trimmed)
+        .then((result) => {
+          if (!cancelled) setOfficial(result);
+        })
+        .catch(() => {
+          if (!cancelled) setOfficial(null);
+        })
+        .finally(() => {
+          if (!cancelled) setChecking(false);
+        });
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [trimmed]);
 
   return (
     <div className="rounded-md border border-line bg-surface p-4">
-      <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-faint">
+      <div className={sectionLabelClass}>
         ULPIN validator
       </div>
       <p className="mt-1.5 text-[11px] leading-relaxed text-dim">
         Paste any 3D ULPIN to verify its check character, decode the vertical position, and recover the
         parcel centroid from the embedded geocode — no database lookup required.
+      </p>
+      <p className="mt-1.5 text-[11px] leading-relaxed text-faint">
+        Assumes an identifier this system generated. A base declared from an external land record is
+        not validated here.
       </p>
       <div className="mt-3 flex items-center gap-2">
         <input
@@ -58,6 +92,31 @@ function ValidatorCard() {
               ? "Structure and ISO 7064 MOD 37,36 check character are valid"
               : "Invalid — malformed structure or failed check character"}
           </div>
+          <div
+            className={`flex items-start gap-2 rounded-sm border px-3 py-2 text-[11px] ${
+              official?.registered
+                ? "border-[#c5ddc9] bg-[#eef5ef] text-[#2f6a4b]"
+                : "border-line bg-raised text-dim"
+            }`}
+          >
+            {official?.registered ? <IconCheck size={13} /> : <IconSearch size={13} />}
+            <div>
+              <div>
+                {checking
+                  ? "Checking the authoritative register…"
+                  : official?.registered
+                    ? `On the register — ${official.use}, level ${official.level}, since ${new Date(official.registeredAt ?? "").toLocaleDateString()}`
+                    : "Not on the authoritative register"}
+              </div>
+              {official?.registered && (
+                <div className="mt-0.5 text-[10px] opacity-80">
+                  {official.encumbered ? "Encumbrance recorded" : "No encumbrance recorded"} · holder
+                  details are not disclosed to public lookups
+                </div>
+              )}
+            </div>
+          </div>
+
           {parts && (
             <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5 rounded-sm border border-line bg-raised px-3 py-2.5 text-[11px]">
               <dt className="text-faint">Parcel geocode</dt>
@@ -74,13 +133,13 @@ function ValidatorCard() {
                   <dd className="text-right font-mono text-[10px]">{formatLngLat(centroid)}</dd>
                 </>
               )}
-              <dt className="text-faint">In this registry</dt>
+              <dt className="text-faint">In this workspace</dt>
               <dd className="text-right">
                 {match ? (
                   <button
                     onClick={() => {
                       selectStratum(match.id);
-                      setPage("workspace");
+                      navigate("/app");
                     }}
                     className="text-accent underline underline-offset-2"
                   >
@@ -103,7 +162,7 @@ export function RegistryPage() {
   const strata = useRegistry((s) => s.strata);
   const conflicts = useRegistry((s) => s.conflicts);
   const selectStratum = useRegistry((s) => s.selectStratum);
-  const setPage = useUI((s) => s.setPage);
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [tenure, setTenure] = useState("all");
 
@@ -131,6 +190,18 @@ export function RegistryPage() {
   return (
     <div className="h-full overflow-y-auto bg-void px-3 py-3">
       <div className="mx-auto flex max-w-6xl flex-col gap-3">
+        <div className="px-1 pb-1 pt-2">
+          <span className={sectionLabelClass}>
+            <i className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-accent align-middle not-italic" />
+            VOLUME REGISTER
+          </span>
+          <h2 className="mt-2 text-[30px] font-light leading-[1.1] tracking-[-0.04em] text-text">
+            Every volume,
+            <br />
+            its own identifier.
+          </h2>
+        </div>
+
         <ValidatorCard />
 
         <div className="rounded-md border border-line bg-surface">
@@ -167,7 +238,7 @@ export function RegistryPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[860px] border-collapse text-left">
               <thead>
-                <tr className="font-mono text-[9px] uppercase tracking-[0.14em] text-faint">
+                <tr className={fieldLabelClass}>
                   {["3D ULPIN", "Description", "Position", "Use", "Tenure", "Holder", "Built-up", "Status"].map(
                     (h) => (
                       <th key={h} className="border-b border-line px-3 py-2 font-normal">
@@ -185,7 +256,7 @@ export function RegistryPage() {
                       key={s.id}
                       onClick={() => {
                         selectStratum(s.id);
-                        setPage("workspace");
+                        navigate("/app");
                       }}
                       className="cursor-pointer border-b border-line text-[11px] hover:bg-hover"
                     >
@@ -236,7 +307,7 @@ export function RegistryPage() {
         </div>
 
         <div className="rounded-md border border-line bg-surface p-3">
-          <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-faint">
+          <div className={sectionLabelClass}>
             Conflict register — {conflicts.length} open
           </div>
           <div className="mt-2 grid gap-2 md:grid-cols-2">
@@ -245,7 +316,7 @@ export function RegistryPage() {
                 key={c.id}
                 onClick={() => {
                   selectStratum(c.subjects[0]);
-                  setPage("workspace");
+                  navigate("/app");
                 }}
                 className={`rounded-sm border px-3 py-2 text-left text-[11px] leading-relaxed transition-colors ${
                   c.severity === "critical"

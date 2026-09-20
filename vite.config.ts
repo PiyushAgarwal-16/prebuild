@@ -102,6 +102,18 @@ export default defineConfig({
         target: `http://127.0.0.1:${process.env.LIVE_PORT || 5181}`,
         changeOrigin: true,
       },
+      "/api/pipeline": {
+        target: `http://127.0.0.1:${process.env.LIVE_PORT || 5181}`,
+        changeOrigin: true,
+      },
+      "/api/ai": {
+        target: `http://127.0.0.1:${process.env.LIVE_PORT || 5181}`,
+        changeOrigin: true,
+      },
+      "/api/registry": {
+        target: `http://127.0.0.1:${process.env.LIVE_PORT || 5181}`,
+        changeOrigin: true,
+      },
     },
   },
 });

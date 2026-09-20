@@ -5,6 +5,9 @@ import { PORT, SYNTHETIC } from "./config.js";
 import { hello, snapshot, startEngine } from "./engine.js";
 import { clientCount, subscribe } from "./stream.js";
 import type { LiveFrame } from "./types.js";
+import { parseBBox, runPipeline } from "./pipeline/run.js";
+import { registryRoutes } from "./registry/routes.js";
+import { hasKey, listModels, DEFAULT_MODEL } from "./pipeline/ai/openai.js";
 
 const app = new Hono();
 
@@ -50,6 +53,38 @@ app.get("/api/live/stream", (c) =>
     }
   }),
 );
+
+app.get("/api/ai/health", async (c) => {
+  if (!hasKey()) return c.json({ ok: false, model: DEFAULT_MODEL, error: "OPENAI_API_KEY is not set" }, 503);
+  try {
+    const models = await listModels();
+    return c.json({
+      ok: true,
+      model: DEFAULT_MODEL,
+      modelAvailable: models.includes(DEFAULT_MODEL),
+      count: models.length,
+      sample: models.filter((m) => m.startsWith("gpt") || m.startsWith("o")).slice(0, 25),
+    });
+  } catch (err) {
+    return c.json({ ok: false, model: DEFAULT_MODEL, error: err instanceof Error ? err.message : "failed" }, 502);
+  }
+});
+
+app.get("/api/pipeline/run", async (c) => {
+  const bbox = parseBBox(c.req.query("bbox"));
+  if (!bbox) {
+    return c.json({ ok: false, error: "bbox=south,west,north,east required, at most 0.08 deg per side" }, 400);
+  }
+  const infer = c.req.query("infer") === "1";
+  try {
+    const result = await runPipeline(bbox, { infer });
+    return c.json({ ok: true, ...result });
+  } catch (err) {
+    return c.json({ ok: false, error: err instanceof Error ? err.message : "pipeline failed" }, 502);
+  }
+});
+
+app.route("/api/registry", registryRoutes);
 
 startEngine();
 

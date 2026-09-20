@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Stratum, StratumUse, Tenure } from "../../types";
+import type { Stratum, StratumUse, Tenure, UlpinSource } from "../../types";
 import { useRegistry } from "../../store/registry";
 import { useUI } from "../../store/ui";
 import { conflictsFor } from "../../lib/conflicts";
@@ -7,11 +7,12 @@ import { formatArea, formatLngLat, ringAreaM2, ringCentroid } from "../../lib/ge
 import { BAND_LABEL, describeLevel, parseUlpin, validateUlpin } from "../../lib/ulpin";
 import { TENURE_COLOR, TENURE_LABEL, USE_COLOR, USE_LABEL } from "../../lib/palette";
 import { IconAlert, IconCheck, IconCopy, IconDocument, IconTrash } from "../icons";
+import { fieldLabelClass, microLabelBase, microLabelClass, sectionLabelClass } from "../ui/primitives";
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-line px-3 py-2">
-      <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.14em] text-faint">
+      <span className={`shrink-0 ${fieldLabelClass}`}>
         {label}
       </span>
       <span className="text-right text-[11px] text-text">{value}</span>
@@ -28,20 +29,30 @@ function Segment({ label, value, tone }: { label: string; value: string; tone: s
       >
         {value}
       </span>
-      <span className="font-mono text-[8px] uppercase tracking-[0.12em] text-faint">{label}</span>
+      <span className={microLabelClass}>{label}</span>
     </div>
   );
 }
 
-function UlpinCard({ stratum }: { stratum: Stratum }) {
+function UlpinCard({ stratum, source }: { stratum: Stratum; source: UlpinSource }) {
   const showToast = useUI((s) => s.showToast);
-  const parts = parseUlpin(stratum.ulpin);
+  const declared = source === "declared";
+  const parts = declared ? null : parseUlpin(stratum.ulpin);
   const valid = validateUlpin(stratum.ulpin);
 
   return (
     <div className="border-b border-line bg-raised px-3 py-3">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-faint">3D ULPIN</span>
+        <span className="flex items-center gap-2">
+          <span className={sectionLabelClass}>3D ULPIN</span>
+          <span
+            className={`rounded-xs border px-1 ${microLabelBase} ${
+              declared ? "border-accent text-accent" : "border-line text-faint"
+            }`}
+          >
+            {declared ? "declared base" : "generated"}
+          </span>
+        </span>
         <button
           onClick={() => {
             navigator.clipboard?.writeText(stratum.ulpin);
@@ -63,14 +74,23 @@ function UlpinCard({ stratum }: { stratum: Stratum }) {
           <Segment label="check" value={parts.check} tone="#6b5a7d" />
         </div>
       )}
-      <div
-        className={`mt-3 flex items-center gap-1.5 text-[10px] ${
-          valid ? "text-[#2f7f5f]" : "text-[#b4553f]"
-        }`}
-      >
-        {valid ? <IconCheck size={12} /> : <IconAlert size={12} />}
-        {valid ? "Checksum valid — ISO 7064 MOD 37,36" : "Checksum failure — record cannot be trusted"}
-      </div>
+      {declared ? (
+        <div className="mt-3 text-[10px] leading-relaxed text-dim">
+          Base taken from an external record. The check character and embedded geocode are not
+          recomputed, because the official derivation is not implemented here.
+        </div>
+      ) : (
+        <div
+          className={`mt-3 flex items-center gap-1.5 text-[10px] ${
+            valid ? "text-[#2f7f5f]" : "text-[#b4553f]"
+          }`}
+        >
+          {valid ? <IconCheck size={12} /> : <IconAlert size={12} />}
+          {valid
+            ? "Checksum valid — ISO 7064 MOD 37,36"
+            : "Checksum failure — record cannot be trusted"}
+        </div>
+      )}
     </div>
   );
 }
@@ -89,7 +109,7 @@ function StratumView({ stratum }: { stratum: Stratum }) {
 
   return (
     <>
-      <UlpinCard stratum={stratum} />
+      <UlpinCard stratum={stratum} source={parcel?.ulpinSource ?? "generated"} />
 
       <div className="px-3 py-3">
         <input
@@ -97,14 +117,14 @@ function StratumView({ stratum }: { stratum: Stratum }) {
           onChange={(e) => updateStratum(stratum.id, { label: e.target.value })}
           className="w-full rounded-sm border border-line bg-base px-2 py-1.5 text-[12px] text-text outline-none focus:border-accent-dim"
         />
-        <div className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-faint">
+        <div className={`mt-1.5 ${fieldLabelClass}`}>
           {BAND_LABEL[stratum.band]} · {describeLevel(stratum.band, stratum.level)}
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2 px-3 pb-3">
         <label className="block">
-          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-faint">Use</span>
+          <span className={fieldLabelClass}>Use</span>
           <select
             value={stratum.use}
             onChange={(e) => updateStratum(stratum.id, { use: e.target.value as StratumUse })}
@@ -118,7 +138,7 @@ function StratumView({ stratum }: { stratum: Stratum }) {
           </select>
         </label>
         <label className="block">
-          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-faint">Tenure</span>
+          <span className={fieldLabelClass}>Tenure</span>
           <select
             value={stratum.tenure}
             onChange={(e) => updateStratum(stratum.id, { tenure: e.target.value as Tenure })}
@@ -132,7 +152,7 @@ function StratumView({ stratum }: { stratum: Stratum }) {
           </select>
         </label>
         <label className="block">
-          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-faint">z min (m)</span>
+          <span className={fieldLabelClass}>z min (m)</span>
           <input
             type="number"
             step={0.1}
@@ -142,7 +162,7 @@ function StratumView({ stratum }: { stratum: Stratum }) {
           />
         </label>
         <label className="block">
-          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-faint">z max (m)</span>
+          <span className={fieldLabelClass}>z max (m)</span>
           <input
             type="number"
             step={0.1}
@@ -180,7 +200,7 @@ function StratumView({ stratum }: { stratum: Stratum }) {
 
       {own.length > 0 && (
         <div className="px-3 py-3">
-          <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-faint">Conflicts</div>
+          <div className={sectionLabelClass}>Conflicts</div>
           {own.map((c) => (
             <div
               key={c.id}
@@ -230,9 +250,12 @@ function ParcelView() {
   const parcel = parcels.find((p) => p.id === selectedParcelId);
   if (!parcel)
     return (
-      <p className="p-4 text-[11px] leading-relaxed text-faint">
-        Select a parcel on the map, or draw a new one with <b className="text-dim">Survey parcel</b>.
-      </p>
+      <div className="flex h-full items-center justify-center p-6">
+        <p className="max-w-[210px] text-center text-[11px] leading-relaxed text-faint">
+          Select a parcel on the map, or draw a new one with{" "}
+          <b className="text-dim">Survey parcel</b>.
+        </p>
+      </div>
     );
 
   const own = strata.filter((s) => s.parcelId === parcel.id);
@@ -244,7 +267,7 @@ function ParcelView() {
   return (
     <>
       <div className="border-b border-line bg-raised px-3 py-3">
-        <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-faint">
+        <span className={sectionLabelClass}>
           Surface parcel ULPIN
         </span>
         <div className="mt-1.5 select-text font-mono text-[15px] tracking-[0.06em] text-text">
@@ -268,7 +291,7 @@ function ParcelView() {
       </div>
 
       <div className="px-3 py-3">
-        <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-faint">
+        <div className={sectionLabelClass}>
           Parcel conflicts
         </div>
         {parcelConflicts.length === 0 && (

@@ -44,7 +44,7 @@ export function installLayers(map: maplibregl.Map, initial: Record<SourceId, Col
     type: "fill",
     source: "parcels",
     paint: {
-      "fill-color": ["case", ["get", "selected"], "#b8862f", "#5d5952"],
+      "fill-color": ["case", ["get", "selected"], "#7165ed", "#5a5a5e"],
       "fill-opacity": ["case", ["get", "selected"], 0.24, 0.12],
     },
   });
@@ -53,7 +53,7 @@ export function installLayers(map: maplibregl.Map, initial: Record<SourceId, Col
     type: "line",
     source: "parcels",
     paint: {
-      "line-color": ["case", ["get", "selected"], "#8a6420", "#3f3c37"],
+      "line-color": ["case", ["get", "selected"], "#5d50e6", "#8b8b90"],
       "line-width": ["case", ["get", "selected"], 2.6, 1.2],
     },
   });
@@ -73,7 +73,7 @@ export function installLayers(map: maplibregl.Map, initial: Record<SourceId, Col
     type: "line",
     source: "strata",
     filter: ["==", ["get", "selected"], true],
-    paint: { "line-color": "#16130f", "line-width": 2 },
+    paint: { "line-color": "#252527", "line-width": 2 },
   });
   map.addLayer({
     id: "live-edit-extrusion",
@@ -90,19 +90,19 @@ export function installLayers(map: maplibregl.Map, initial: Record<SourceId, Col
     id: "live-edit-line",
     type: "line",
     source: "live-edit",
-    paint: { "line-color": "#16130f", "line-width": 2.4, "line-dasharray": [1.6, 1] },
+    paint: { "line-color": "#252527", "line-width": 2.4, "line-dasharray": [1.6, 1] },
   });
   map.addLayer({
     id: "draft-fill",
     type: "fill",
     source: "draft",
-    paint: { "fill-color": "#b8862f", "fill-opacity": 0.25 },
+    paint: { "fill-color": "#7165ed", "fill-opacity": 0.22 },
   });
   map.addLayer({
     id: "draft-line",
     type: "line",
     source: "draft",
-    paint: { "line-color": "#8a6420", "line-width": 2, "line-dasharray": [2, 1] },
+    paint: { "line-color": "#5d50e6", "line-width": 2, "line-dasharray": [2, 1] },
   });
   map.addLayer({
     id: "track-line",
@@ -127,7 +127,7 @@ export function installLayers(map: maplibregl.Map, initial: Record<SourceId, Col
     paint: {
       "circle-radius": 5,
       "circle-color": fixColorExpression,
-      "circle-stroke-color": "#16130f",
+      "circle-stroke-color": "#252527",
       "circle-stroke-width": 1.2,
       "circle-opacity": ["case", ["get", "online"], 1, 0.35],
     },
@@ -145,7 +145,7 @@ export function installLayers(map: maplibregl.Map, initial: Record<SourceId, Col
     paint: {
       "circle-radius": 6.5,
       "circle-color": fixColorExpression,
-      "circle-stroke-color": "#fbfaf7",
+      "circle-stroke-color": "#ffffff",
       "circle-stroke-width": 2,
     },
   });

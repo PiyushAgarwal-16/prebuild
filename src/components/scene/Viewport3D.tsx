@@ -97,7 +97,7 @@ function GroundPlane() {
     <>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
         <planeGeometry args={[900, 900]} />
-        <meshStandardMaterial color="#b9b1a4" roughness={1} transparent opacity={0.42} />
+        <meshStandardMaterial color="#d7d5d1" roughness={1} transparent opacity={0.5} />
       </mesh>
       <Grid
         position={[0, 0.001, 0]}
@@ -106,8 +106,8 @@ function GroundPlane() {
         cellThickness={0.5}
         sectionSize={25}
         sectionThickness={1}
-        cellColor="#8d857a"
-        sectionColor="#6f6860"
+        cellColor="#c3c0ba"
+        sectionColor="#8b8b90"
         fadeDistance={520}
         fadeStrength={1.2}
         infiniteGrid
@@ -128,8 +128,8 @@ export function Viewport3D() {
       onCreated={({ gl, scene }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.06;
-        scene.background = new THREE.Color("#d8d3c9");
-        scene.fog = new THREE.Fog("#d8d3c9", 420, 900);
+        scene.background = new THREE.Color("#f0eee9");
+        scene.fog = new THREE.Fog("#f0eee9", 420, 900);
       }}
       onPointerMissed={() => selectStratum(null)}
     >

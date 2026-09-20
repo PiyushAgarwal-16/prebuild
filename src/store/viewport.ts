@@ -4,6 +4,13 @@ import type { MapCamera } from "../lib/camera";
 
 export type CameraEmitter = "map" | "scene";
 
+export interface MapBounds {
+  south: number;
+  west: number;
+  north: number;
+  east: number;
+}
+
 export interface LiveEdit {
   stratumId: string;
   footprint: Ring;
@@ -19,7 +26,9 @@ interface ViewportStore {
   mapHeightPx: number;
   sceneHeightPx: number;
   liveEdit: LiveEdit | null;
+  bounds: MapBounds | null;
 
+  setBounds: (bounds: MapBounds) => void;
   setCamera: (camera: MapCamera, emitter: CameraEmitter) => void;
   setLinked: (linked: boolean) => void;
   setMapHeight: (px: number) => void;
@@ -39,7 +48,9 @@ export const useViewport = create<ViewportStore>((set, get) => ({
   mapHeightPx: 800,
   sceneHeightPx: 800,
   liveEdit: null,
+  bounds: null,
 
+  setBounds: (bounds) => set({ bounds }),
   setCamera: (camera, emitter) => set({ camera, emitter, revision: get().revision + 1 }),
   setLinked: (linked) => set({ linked }),
   setMapHeight: (mapHeightPx) => set({ mapHeightPx }),

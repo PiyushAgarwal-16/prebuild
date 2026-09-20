@@ -120,7 +120,7 @@ function Volume({
       </mesh>
       <lineSegments geometry={edges}>
         <lineBasicMaterial
-          color={flagged ? CONFLICT_COLOR : selected ? "#1c1a17" : "#3a3631"}
+          color={flagged ? CONFLICT_COLOR : selected ? "#252527" : "#5a5a5e"}
           transparent
           opacity={flagged ? 0.95 : dimmed ? 0.18 : 0.5}
         />
@@ -154,7 +154,7 @@ function ParcelOutlines({ origin }: { origin: LngLat }) {
         return (
           <group key={p.id}>
             <lineLoop geometry={geo}>
-              <lineBasicMaterial color={active ? "#1c1a17" : "#6d6660"} linewidth={2} transparent opacity={active ? 0.9 : 0.4} />
+              <lineBasicMaterial color={active ? "#252527" : "#8b8b90"} linewidth={2} transparent opacity={active ? 0.9 : 0.4} />
             </lineLoop>
             <mesh
               rotation={[-Math.PI / 2, 0, 0]}
@@ -167,7 +167,7 @@ function ParcelOutlines({ origin }: { origin: LngLat }) {
             >
               <shapeGeometry args={[shape]} />
               <meshStandardMaterial
-                color={active ? "#cfc7b8" : "#bdb6ab"}
+                color={active ? "#e6e3dd" : "#d7d5d1"}
                 roughness={1}
                 transparent
                 opacity={active ? 0.95 : 0.6}

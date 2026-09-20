@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import type { Conflict, LevelBand, Parcel, Ring, Stratum, StratumUse, Tenure } from "../types";
-import { buildSeed } from "../lib/seed";
 import { detectConflicts } from "../lib/conflicts";
 import { ringAreaM2, ringCentroid } from "../lib/geo";
 import { composeUlpin, generateBase, nextUnit } from "../lib/ulpin";
@@ -48,7 +47,7 @@ interface RegistryStore {
   updateStratum: (id: string, patch: Partial<Stratum>) => void;
   removeStratum: (id: string) => void;
   ingest: (parcels: Parcel[], strata: Stratum[]) => void;
-  resetToSeed: () => void;
+  clearAll: () => void;
 }
 
 interface Persisted {
@@ -61,12 +60,17 @@ function load(): Persisted {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Persisted;
-      if (Array.isArray(parsed.parcels) && Array.isArray(parsed.strata)) return parsed;
+      if (Array.isArray(parsed.parcels) && Array.isArray(parsed.strata)) {
+        return {
+          parcels: parsed.parcels.map((p) => ({ ...p, ulpinSource: p.ulpinSource ?? "generated" })),
+          strata: parsed.strata,
+        };
+      }
     }
   } catch {
-    /* fall through to seed */
+    /* fall through to an empty register */
   }
-  return buildSeed();
+  return { parcels: [], strata: [] };
 }
 
 function save(state: Persisted) {
@@ -109,6 +113,7 @@ export const useRegistry = create<RegistryStore>((set, get) => {
       const parcel: Parcel = {
         id: newId("parcel"),
         ulpinBase: generateBase(stateCode, centroid),
+        ulpinSource: "generated",
         ring: input.ring,
         surveyNumber: input.surveyNumber || "Unsurveyed",
         jurisdiction: {
@@ -206,12 +211,8 @@ export const useRegistry = create<RegistryStore>((set, get) => {
       });
     },
 
-    resetToSeed: () => {
-      const seed = buildSeed();
-      commit(seed.parcels, seed.strata, {
-        selectedParcelId: seed.parcels[0].id,
-        selectedStratumId: null,
-      });
+    clearAll: () => {
+      commit([], [], { selectedParcelId: null, selectedStratumId: null });
     },
   };
 });

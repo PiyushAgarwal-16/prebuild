@@ -2,6 +2,7 @@ export type LngLat = [number, number];
 export type Ring = LngLat[];
 export type Vec3 = [number, number, number];
 export type BasemapId = "street" | "satellite";
+export type UlpinSource = "generated" | "declared";
 
 export type LevelBand = "S" | "B" | "G" | "F" | "A" | "E";
 
@@ -35,6 +36,7 @@ export interface Jurisdiction {
 export interface Parcel {
   id: string;
   ulpinBase: string;
+  ulpinSource: UlpinSource;
   ring: Ring;
   surveyNumber: string;
   jurisdiction: Jurisdiction;

@@ -2,7 +2,6 @@ import { create } from "zustand";
 import type { BasemapId, LevelBand } from "../types";
 import { BAND_ORDER } from "../lib/ulpin";
 
-export type Page = "workspace" | "registry";
 export type Workspace = "split" | "map" | "model";
 export type ColorBy = "use" | "tenure";
 
@@ -10,7 +9,6 @@ const allBands = (): Record<LevelBand, boolean> =>
   Object.fromEntries(BAND_ORDER.map((b) => [b, true])) as Record<LevelBand, boolean>;
 
 interface UIStore {
-  page: Page;
   workspace: Workspace;
   colorBy: ColorBy;
   basemap: BasemapId;
@@ -20,10 +18,10 @@ interface UIStore {
   importOpen: boolean;
   newVolumeOpen: boolean;
   planOpen: boolean;
+  pipelineOpen: boolean;
   certificateFor: string | null;
   toast: { id: number; message: string } | null;
 
-  setPage: (p: Page) => void;
   setWorkspace: (w: Workspace) => void;
   setColorBy: (c: ColorBy) => void;
   setBasemap: (b: BasemapId) => void;
@@ -33,6 +31,7 @@ interface UIStore {
   setImportOpen: (o: boolean) => void;
   setNewVolumeOpen: (o: boolean) => void;
   setPlanOpen: (o: boolean) => void;
+  setPipelineOpen: (o: boolean) => void;
   setCertificateFor: (id: string | null) => void;
   showToast: (message: string) => void;
 }
@@ -40,7 +39,6 @@ interface UIStore {
 let toastId = 0;
 
 export const useUI = create<UIStore>((set) => ({
-  page: "workspace",
   workspace: "split",
   colorBy: "use",
   basemap: "street",
@@ -50,10 +48,10 @@ export const useUI = create<UIStore>((set) => ({
   importOpen: false,
   newVolumeOpen: false,
   planOpen: false,
+  pipelineOpen: false,
   certificateFor: null,
   toast: null,
 
-  setPage: (page) => set({ page }),
   setWorkspace: (workspace) => set({ workspace }),
   setColorBy: (colorBy) => set({ colorBy }),
   setBasemap: (basemap) => set({ basemap }),
@@ -63,6 +61,7 @@ export const useUI = create<UIStore>((set) => ({
   setImportOpen: (importOpen) => set({ importOpen }),
   setNewVolumeOpen: (newVolumeOpen) => set({ newVolumeOpen }),
   setPlanOpen: (planOpen) => set({ planOpen }),
+  setPipelineOpen: (pipelineOpen) => set({ pipelineOpen }),
   setCertificateFor: (certificateFor) => set({ certificateFor }),
   showToast: (message) => {
     const id = ++toastId;
