@@ -1,0 +1,119 @@
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/dm-sans.woff2") format("woff2");
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+.landing-root {
+  font-family: "DM Sans", sans-serif;
+  color: #252527;
+  background: #f7f6f2;
+  font-synthesis: none;
+  --paper: #f7f6f2;
+  --purple: #7165ed;
+  --ink: #252527;
+  --line: #d7d5d1;
+  --gutter: clamp(24px, 5vw, 88px);
+}
+.landing-root * {
+  box-sizing: border-box;
+}
+html[data-view="landing"] {
+  scroll-behavior: smooth;
+  scroll-padding-top: 110px;
+}
+html[data-view="landing"] body {
+  margin: 0;
+}
+.landing-root button,
+.landing-root a,
+.landing-root input {
+  -webkit-tap-highlight-color: transparent;
+}
+.landing-root button,
+.landing-root a,
+.landing-root summary {
+  touch-action: manipulation;
+}
+.landing-root a {
+  color: inherit;
+  text-decoration: none;
+}
+.landing-root button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 0;
+}
+.landing-root button,
+.landing-root summary,
+.landing-root a {
+  outline-offset: 6px;
+}
+.landing-root button:focus-visible,
+.landing-root summary:focus-visible,
+.landing-root a:focus-visible,
+.landing-root [tabindex]:focus-visible {
+  outline: 2px solid var(--purple);
+}
+.landing-root img {
+  display: block;
+  max-width: 100%;
+}
+.landing-root h1,
+.landing-root h2,
+.landing-root h3,
+.landing-root p {
+  margin: 0;
+}
+.landing-root h1,
+.landing-root h2,
+.landing-root h3 {
+  font-weight: 350;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.landing-root h2 {
+  font-size: clamp(38px, 4.6vw, 68px);
+  line-height: 1.07;
+}
+.landing-root h3 {
+  font-size: clamp(28px, 3vw, 44px);
+  line-height: 1.12;
+}
+.landing-root p {
+  line-height: 1.6;
+}
+.landing-root svg.arrow {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  flex-shrink: 0;
+}
+.landing-root .skip-link {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  padding: 12px;
+  background: white;
+  color: black;
+  z-index: 50;
+  transform: translateY(-160%);
+}
+.landing-root .skip-link:focus {
+  transform: none;
+}
+.landing-root [hidden] {
+  display: none !important;
+}
+@keyframes flow {
+  to {
+    stroke-dashoffset: -940;
+  }
+}
+html[data-view="landing"] {
+  background: #f7f6f2;
+}

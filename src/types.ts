@@ -1,6 +1,7 @@
 export type LngLat = [number, number];
 export type Ring = LngLat[];
 export type Vec3 = [number, number, number];
+export type BasemapId = "street" | "satellite";
 
 export type LevelBand = "S" | "B" | "G" | "F" | "A" | "E";
 

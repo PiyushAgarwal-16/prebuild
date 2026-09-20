@@ -95,5 +95,13 @@ function planBridge(): Plugin {
 export default defineConfig({
   plugins: [react(), tailwindcss(), planBridge()],
   optimizeDeps: { exclude: ["maplibre-gl"] },
-  server: { port: 5180 },
+  server: {
+    port: 5180,
+    proxy: {
+      "/api/live": {
+        target: `http://127.0.0.1:${process.env.LIVE_PORT || 5181}`,
+        changeOrigin: true,
+      },
+    },
+  },
 });

@@ -4,8 +4,11 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Grid, OrbitControls } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { StrataScene, useSceneOrigin } from "./StrataScene";
+import { SceneCameraLink } from "./SceneCameraLink";
+import { LiveScene } from "./LiveScene";
 import { useRegistry } from "../../store/registry";
 import { project, ringCentroid } from "../../lib/geo";
+import { MAX_PITCH } from "../../lib/camera";
 
 function CameraRig() {
   const origin = useSceneOrigin();
@@ -147,6 +150,8 @@ export function Viewport3D() {
       />
       <GroundPlane />
       <StrataScene />
+      <LiveScene />
+      <SceneCameraLink />
       <CameraRig />
       <SnapshotHandler />
       <OrbitControls
@@ -155,7 +160,7 @@ export function Viewport3D() {
         dampingFactor={0.08}
         minDistance={12}
         maxDistance={700}
-        maxPolarAngle={Math.PI / 2 + 0.35}
+        maxPolarAngle={(MAX_PITCH * Math.PI) / 180}
       />
     </Canvas>
   );

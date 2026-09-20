@@ -4,6 +4,8 @@ import { Html } from "@react-three/drei";
 import type { LngLat, Stratum } from "../../types";
 import { useRegistry } from "../../store/registry";
 import { useUI } from "../../store/ui";
+import { useViewport } from "../../store/viewport";
+import { useVolumeDrag } from "./useVolumeDrag";
 import { project, ringCentroid } from "../../lib/geo";
 import { CONFLICT_COLOR, TENURE_COLOR, USE_COLOR } from "../../lib/palette";
 
@@ -58,21 +60,24 @@ function Volume({
   lift: number;
 }) {
   const selectStratum = useRegistry((s) => s.selectStratum);
+  const liveEdit = useViewport((s) => (s.liveEdit?.stratumId === stratum.id ? s.liveEdit : null));
+  const drag = useVolumeDrag(stratum, origin, selected);
+  const footprint = liveEdit?.footprint ?? stratum.footprint;
   const height = Math.max(stratum.zMax - stratum.zMin, 0.05);
 
   const geometry = useMemo(() => {
-    const shape = shapeFor(origin, stratum.footprint);
+    const shape = shapeFor(origin, footprint);
     const geo = new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false });
     geo.rotateX(-Math.PI / 2);
     return geo;
-  }, [origin, stratum.footprint, height]);
+  }, [origin, footprint, height]);
 
   const edges = useMemo(() => new THREE.EdgesGeometry(geometry, 25), [geometry]);
 
   const labelAt = useMemo(() => {
-    const [x, z] = project(origin, ringCentroid(stratum.footprint));
+    const [x, z] = project(origin, ringCentroid(footprint));
     return [x, height + 1.4, z] as [number, number, number];
-  }, [origin, stratum.footprint, height]);
+  }, [origin, footprint, height]);
   const opacity = selected ? 0.97 : dimmed ? 0.16 : muted ? 0.28 : 0.68;
 
   return (
@@ -91,9 +96,12 @@ function Volume({
           e.stopPropagation();
           selectStratum(stratum.id);
         }}
+        onPointerDown={drag.onPointerDown}
+        onPointerMove={drag.onPointerMove}
+        onPointerUp={drag.onPointerUp}
         onPointerOver={(e) => {
           e.stopPropagation();
-          document.body.style.cursor = "pointer";
+          document.body.style.cursor = selected ? "grab" : "pointer";
         }}
         onPointerOut={() => {
           document.body.style.cursor = "default";

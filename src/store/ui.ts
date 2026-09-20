@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { LevelBand } from "../types";
+import type { BasemapId, LevelBand } from "../types";
 import { BAND_ORDER } from "../lib/ulpin";
 
 export type Page = "workspace" | "registry";
@@ -13,6 +13,7 @@ interface UIStore {
   page: Page;
   workspace: Workspace;
   colorBy: ColorBy;
+  basemap: BasemapId;
   explode: number;
   bands: Record<LevelBand, boolean>;
   drawing: boolean;
@@ -25,6 +26,7 @@ interface UIStore {
   setPage: (p: Page) => void;
   setWorkspace: (w: Workspace) => void;
   setColorBy: (c: ColorBy) => void;
+  setBasemap: (b: BasemapId) => void;
   setExplode: (v: number) => void;
   toggleBand: (b: LevelBand) => void;
   setDrawing: (d: boolean) => void;
@@ -41,6 +43,7 @@ export const useUI = create<UIStore>((set) => ({
   page: "workspace",
   workspace: "split",
   colorBy: "use",
+  basemap: "street",
   explode: 0,
   bands: allBands(),
   drawing: false,
@@ -53,6 +56,7 @@ export const useUI = create<UIStore>((set) => ({
   setPage: (page) => set({ page }),
   setWorkspace: (workspace) => set({ workspace }),
   setColorBy: (colorBy) => set({ colorBy }),
+  setBasemap: (basemap) => set({ basemap }),
   setExplode: (explode) => set({ explode }),
   toggleBand: (b) => set((s) => ({ bands: { ...s.bands, [b]: !s.bands[b] } })),
   setDrawing: (drawing) => set({ drawing }),

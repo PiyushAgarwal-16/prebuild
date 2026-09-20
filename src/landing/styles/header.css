@@ -1,0 +1,73 @@
+.landing-root .site-header {
+  position: fixed;
+  top: 22px;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+}
+.landing-root .navigation {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 23px 27px;
+  background: rgba(29, 29, 30, 0.94);
+  backdrop-filter: blur(16px);
+  color: #fff;
+  border-radius: 4px;
+  pointer-events: auto;
+  box-shadow: 0 6px 30px #00000012;
+}
+.landing-root .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+}
+.landing-root .wordmark span {
+  font-weight: 350;
+  font-size: 13px;
+  letter-spacing: -0.025em;
+  align-self: flex-end;
+  margin-bottom: 3px;
+}
+.landing-root .wordmark svg {
+  width: 9px;
+  height: 9px;
+  fill: var(--purple);
+  margin-left: 3px;
+}
+.landing-root .nav-links {
+  display: flex;
+  gap: 25px;
+  align-items: center;
+}
+.landing-root .nav-links a,
+.landing-root .nav-cta {
+  font-size: 14px;
+  white-space: nowrap;
+}
+.landing-root .nav-links a {
+  padding: 5px 0;
+  transition: color 0.2s;
+}
+.landing-root .nav-links a:hover,
+.landing-root .nav-links a.active {
+  color: #a79cff;
+}
+.landing-root .nav-cta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.landing-root .nav-cta:hover {
+  color: #b6acff;
+}
+.landing-root .menu-toggle {
+  display: none;
+}

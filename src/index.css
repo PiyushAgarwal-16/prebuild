@@ -34,6 +34,18 @@ html,
 body,
 #root {
   height: 100%;
+}
+
+html[data-view="landing"],
+html[data-view="landing"] body,
+html[data-view="landing"] #root {
+  height: auto;
+  overflow: visible;
+}
+
+html:not([data-view="landing"]),
+html:not([data-view="landing"]) body,
+html:not([data-view="landing"]) #root {
   overflow: hidden;
 }
 

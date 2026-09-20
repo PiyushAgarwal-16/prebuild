@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { MapView } from "./components/map/MapView";
 import { Viewport3D } from "./components/scene/Viewport3D";
 import { TopBar } from "./components/TopBar";
@@ -7,12 +8,25 @@ import { RegistryPage } from "./components/registry/RegistryPage";
 import { CertificateModal, ImportModal, NewVolumeModal, Toast } from "./components/modals";
 import { PlanImportModal } from "./components/PlanImportModal";
 import { useUI } from "./store/ui";
+import { useLive } from "./store/live";
 
 const HALF = "w-[calc(50%-6px)]";
 
 export default function App() {
   const page = useUI((s) => s.page);
   const workspace = useUI((s) => s.workspace);
+  const connect = useLive((s) => s.connect);
+
+  useEffect(() => {
+    connect();
+  }, [connect]);
+
+  useEffect(() => {
+    document.documentElement.dataset.view = "workspace";
+    return () => {
+      delete document.documentElement.dataset.view;
+    };
+  }, []);
 
   const mapClass =
     workspace === "split"

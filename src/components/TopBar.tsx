@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { useRegistry } from "../store/registry";
 import { useUI } from "../store/ui";
 import type { Workspace } from "../store/ui";
@@ -83,7 +84,11 @@ export function TopBar() {
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-line bg-surface px-3">
-      <div className="flex items-center gap-2.5">
+      <Link
+        to="/"
+        title="Back to the landing page"
+        className="flex items-center gap-2.5 transition-opacity hover:opacity-70"
+      >
         <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-text text-base">
           <IconLayers size={16} />
         </div>
@@ -93,7 +98,7 @@ export function TopBar() {
             Vertical property registry
           </div>
         </div>
-      </div>
+      </Link>
 
       <div className="flex items-center rounded-sm border border-line p-0.5">
         {(["workspace", "registry"] as const).map((p) => (
