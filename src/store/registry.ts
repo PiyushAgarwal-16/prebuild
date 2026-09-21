@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Conflict, LevelBand, Parcel, Ring, Stratum, StratumUse, Tenure } from "../types";
+import type { Conflict, DocumentKind, LevelBand, Parcel, Ring, Stratum, StratumUse, Tenure } from "../types";
 import { detectConflicts } from "../lib/conflicts";
 import { ringAreaM2, ringCentroid } from "../lib/geo";
 import { composeUlpin, generateBase, nextUnit } from "../lib/ulpin";
@@ -46,6 +46,8 @@ interface RegistryStore {
   addStratum: (input: StratumInput) => Stratum;
   updateStratum: (id: string, patch: Partial<Stratum>) => void;
   removeStratum: (id: string) => void;
+  attachDocument: (stratumId: string, name: string, kind: DocumentKind) => void;
+  removeDocument: (stratumId: string, documentId: string) => void;
   ingest: (parcels: Parcel[], strata: Stratum[]) => void;
   clearAll: () => void;
 }
@@ -203,6 +205,27 @@ export const useRegistry = create<RegistryStore>((set, get) => {
       );
     },
 
+    attachDocument: (stratumId, name, kind) => {
+      const doc = { id: newId("doc"), name, kind, addedOn: new Date().toISOString().slice(0, 10) };
+      commit(
+        get().parcels,
+        get().strata.map((s) =>
+          s.id === stratumId ? { ...s, documents: [...(s.documents ?? []), doc] } : s,
+        ),
+      );
+    },
+
+    removeDocument: (stratumId, documentId) => {
+      commit(
+        get().parcels,
+        get().strata.map((s) =>
+          s.id === stratumId
+            ? { ...s, documents: (s.documents ?? []).filter((d) => d.id !== documentId) }
+            : s,
+        ),
+      );
+    },
+
     ingest: (parcels, strata) => {
       const merged = [...get().parcels, ...parcels];
       commit(merged, [...get().strata, ...strata], {
@@ -217,5 +240,3 @@ export const useRegistry = create<RegistryStore>((set, get) => {
   };
 });
 
-export const selectParcelStrata = (parcelId: string | null) => (s: RegistryStore) =>
-  parcelId ? s.strata.filter((x) => x.parcelId === parcelId) : [];

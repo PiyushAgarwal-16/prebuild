@@ -28,7 +28,7 @@ export function unitBounds(u: PlanUnit) {
   };
 }
 
-export function overlapArea(a: PlanUnit, b: PlanUnit): number {
+function overlapArea(a: PlanUnit, b: PlanUnit): number {
   const ab = unitBounds(a);
   const bb = unitBounds(b);
   const w = Math.min(ab.maxX, bb.maxX) - Math.max(ab.minX, bb.minX);

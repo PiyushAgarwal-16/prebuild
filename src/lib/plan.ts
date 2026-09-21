@@ -1,6 +1,6 @@
 import type { LevelBand, LngLat, Parcel, Ring, StratumUse, Tenure } from "../types";
 import type { StratumInput } from "../store/registry";
-import { project, ringCentroid, ringInsideRing, unproject } from "./geo";
+import { outsideAreaM2, project, ringAreaM2, ringCentroid, unproject } from "./geo";
 
 export type PlanUnitKind =
   | "apartment"
@@ -139,7 +139,7 @@ export function planToStrata(
 
   const inputs = plan.units.map((unit) => {
     const footprint = unitRing(centre, unit, opts);
-    if (!ringInsideRing(footprint, parcel.ring)) outside++;
+    if (outsideAreaM2(footprint, parcel.ring) > Math.max(1, ringAreaM2(footprint) * 0.01)) outside++;
     const mapping = KIND_MAPPING[unit.kind];
     return {
       parcelId: parcel.id,

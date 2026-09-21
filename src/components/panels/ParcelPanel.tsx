@@ -6,6 +6,7 @@ import { BAND_LABEL, BAND_ORDER, describeLevel } from "../../lib/ulpin";
 import { formatArea, ringAreaM2 } from "../../lib/geo";
 import { BAND_TINT, TENURE_COLOR, USE_COLOR } from "../../lib/palette";
 import { IconEye, IconEyeOff, IconStack } from "../icons";
+import { GuidedBuild } from "../guided/GuidedBuild";
 import { fieldLabelBase, sectionLabelClass } from "../ui/primitives";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -54,6 +55,8 @@ export function ParcelPanel() {
 
   return (
     <aside className="flex w-[300px] shrink-0 flex-col overflow-hidden rounded-md border border-line bg-surface">
+      <GuidedBuild />
+
       <SectionLabel>Surface parcels</SectionLabel>
       <div className="max-h-[30%] overflow-y-auto px-2 pb-2">
         {parcels.length === 0 && (

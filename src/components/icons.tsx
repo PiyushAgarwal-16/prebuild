@@ -25,34 +25,9 @@ function S({
   );
 }
 
-export const IconUndo = (p: IconProps) => (
-  <S {...p}>
-    <path d="M3 7v6h6" />
-    <path d="M3 13a9 9 0 1 0 3-7.7L3 8" />
-  </S>
-);
 
-export const IconRedo = (p: IconProps) => (
-  <S {...p}>
-    <path d="M21 7v6h-6" />
-    <path d="M21 13a9 9 0 1 1-3-7.7L21 8" />
-  </S>
-);
 
-export const IconPlay = (p: IconProps) => (
-  <S {...p}>
-    <path d="M5 4l14 8-14 8z" />
-  </S>
-);
 
-export const IconShare = (p: IconProps) => (
-  <S {...p}>
-    <circle cx="18" cy="5" r="2.4" />
-    <circle cx="6" cy="12" r="2.4" />
-    <circle cx="18" cy="19" r="2.4" />
-    <path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4" />
-  </S>
-);
 
 export const IconExport = (p: IconProps) => (
   <S {...p}>
@@ -76,11 +51,6 @@ export const IconEyeOff = (p: IconProps) => (
   </S>
 );
 
-export const IconChevron = (p: IconProps) => (
-  <S {...p}>
-    <path d="M9 6l6 6-6 6" />
-  </S>
-);
 
 export const IconPlus = (p: IconProps) => (
   <S {...p}>
@@ -114,52 +84,12 @@ export const IconSparkle = (p: IconProps) => (
   </S>
 );
 
-export const IconMove = (p: IconProps) => (
-  <S {...p}>
-    <path d="M12 2v20M2 12h20M12 2l-3 3M12 2l3 3M12 22l-3-3M12 22l3-3M2 12l3-3M2 12l3 3M22 12l-3-3M22 12l-3 3" />
-  </S>
-);
 
-export const IconRotate = (p: IconProps) => (
-  <S {...p}>
-    <path d="M21 12a9 9 0 1 1-2.6-6.4" />
-    <path d="M21 3v5h-5" />
-  </S>
-);
 
-export const IconScale = (p: IconProps) => (
-  <S {...p}>
-    <path d="M21 3h-6M21 3v6M21 3l-8 8" />
-    <rect x="3" y="11" width="10" height="10" rx="1" />
-  </S>
-);
 
-export const IconSun = (p: IconProps) => (
-  <S {...p}>
-    <circle cx="12" cy="12" r="4" />
-    <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" />
-  </S>
-);
 
-export const IconSunset = (p: IconProps) => (
-  <S {...p}>
-    <path d="M12 9V3M8.5 6.5L12 3l3.5 3.5" />
-    <path d="M5.2 15.5A7 7 0 0 1 18.8 15.5" />
-    <path d="M2 19h20M6 22h12" />
-  </S>
-);
 
-export const IconMoon = (p: IconProps) => (
-  <S {...p}>
-    <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z" />
-  </S>
-);
 
-export const IconMaximize = (p: IconProps) => (
-  <S {...p}>
-    <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
-  </S>
-);
 
 export const IconCopy = (p: IconProps) => (
   <S {...p}>
@@ -168,13 +98,6 @@ export const IconCopy = (p: IconProps) => (
   </S>
 );
 
-export const IconImage = (p: IconProps) => (
-  <S {...p}>
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <circle cx="9" cy="9" r="2" />
-    <path d="M21 15l-5-5-11 11" />
-  </S>
-);
 
 export const IconCube = (p: IconProps) => (
   <S {...p}>
@@ -183,35 +106,9 @@ export const IconCube = (p: IconProps) => (
   </S>
 );
 
-export const IconPresentation = (p: IconProps) => (
-  <S {...p}>
-    <rect x="3" y="4" width="18" height="12" rx="1.5" />
-    <path d="M12 16v4M8 20h8" />
-  </S>
-);
 
-export const IconArrowUp = (p: IconProps) => (
-  <S {...p}>
-    <path d="M12 19V5M5 12l7-7 7 7" />
-  </S>
-);
 
-export const IconSettings = (p: IconProps) => (
-  <S {...p}>
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.08a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.08a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.05z" />
-  </S>
-);
 
-export function PrebuildMark({ size = 20 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <rect x="2" y="2" width="20" height="20" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M7 17V7h5.5a3.25 3.25 0 0 1 0 6.5H7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M15.5 13.5L18 17" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 export const IconPolygon = (p: IconProps) => (
   <S {...p}>
@@ -219,12 +116,6 @@ export const IconPolygon = (p: IconProps) => (
   </S>
 );
 
-export const IconLayers = (p: IconProps) => (
-  <S {...p}>
-    <path d="M12 3l9 5-9 5-9-5z" />
-    <path d="M3 13l9 5 9-5" />
-  </S>
-);
 
 export const IconMap = (p: IconProps) => (
   <S {...p}>

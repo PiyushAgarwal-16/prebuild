@@ -94,7 +94,7 @@ export function PipelineModal() {
 
   const commit = () => {
     if (!result) return;
-    const { parcels, strata } = toRegistry(result.buildings);
+    const { parcels, strata } = toRegistry(result.buildings, result.jurisdiction);
     if (!parcels.length) {
       showToast("Nothing to ingest");
       return;
@@ -186,6 +186,15 @@ export function PipelineModal() {
                     </span>
                   }
                 />
+              </div>
+
+              <div className="mt-2 flex items-center gap-2 text-[11px]">
+                <span className={fieldLabelClass}>jurisdiction</span>
+                <span className={result.jurisdiction.resolved ? "text-text" : "text-[#8a6420]"}>
+                  {result.jurisdiction.resolved
+                    ? `${result.jurisdiction.villageName} · ${result.jurisdiction.districtName} · ${result.jurisdiction.stateName} (${result.jurisdiction.stateCode})`
+                    : "Could not be resolved — identifiers will carry state code 00"}
+                </span>
               </div>
 
               <div className="mt-3 text-[11px] text-dim">

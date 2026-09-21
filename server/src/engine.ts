@@ -70,8 +70,3 @@ export function startEngine(): void {
   timer = setInterval(tick, TICK_MS);
 }
 
-export function stopEngine(): void {
-  if (!timer) return;
-  clearInterval(timer);
-  timer = null;
-}

@@ -9,7 +9,7 @@ export interface ProjectedCRS {
   toGeographic: (p: [number, number]) => LngLat;
 }
 
-export function utmZoneFor(lng: number): number {
+function utmZoneFor(lng: number): number {
   return Math.floor((((lng + 180) % 360) + 360) % 360 / 6) + 1;
 }
 

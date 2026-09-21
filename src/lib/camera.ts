@@ -19,20 +19,20 @@ export interface OrbitCamera {
   position: [number, number, number];
 }
 
-export function metresPerPixel(lat: number, zoom: number): number {
+function metresPerPixel(lat: number, zoom: number): number {
   return (EQUATOR_MPP * Math.cos(lat * DEG)) / 2 ** zoom;
 }
 
-export function zoomForMetresPerPixel(lat: number, mpp: number): number {
+function zoomForMetresPerPixel(lat: number, mpp: number): number {
   return Math.log2((EQUATOR_MPP * Math.cos(lat * DEG)) / Math.max(mpp, 1e-6));
 }
 
-export function distanceForZoom(lat: number, zoom: number, heightPx: number, fovDeg = SCENE_FOV): number {
+function distanceForZoom(lat: number, zoom: number, heightPx: number, fovDeg = SCENE_FOV): number {
   const span = metresPerPixel(lat, zoom) * heightPx;
   return span / 2 / Math.tan((fovDeg / 2) * DEG);
 }
 
-export function zoomForDistance(lat: number, distance: number, heightPx: number, fovDeg = SCENE_FOV): number {
+function zoomForDistance(lat: number, distance: number, heightPx: number, fovDeg = SCENE_FOV): number {
   const span = 2 * distance * Math.tan((fovDeg / 2) * DEG);
   return zoomForMetresPerPixel(lat, span / Math.max(heightPx, 1));
 }

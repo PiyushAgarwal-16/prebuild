@@ -41,6 +41,14 @@ export interface ValidationReport {
   findings: Finding[];
 }
 
+export interface Jurisdiction {
+  stateCode: string;
+  stateName: string;
+  districtName: string;
+  villageName: string;
+  resolved: boolean;
+}
+
 export interface PipelineResult {
   bbox: { south: number; west: number; north: number; east: number };
   widened: boolean;
@@ -48,6 +56,7 @@ export interface PipelineResult {
   report: ValidationReport;
   inference: { attempted: number; applied: number; model: string | null; error: string | null };
   sources: { buildings: string; terrain: string };
+  jurisdiction: Jurisdiction;
 }
 
 export type BBox = [LngLat, LngLat];

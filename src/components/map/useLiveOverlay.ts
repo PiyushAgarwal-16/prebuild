@@ -45,7 +45,7 @@ export function useLiveOverlay(map: maplibregl.Map | null, basemap: BasemapId): 
 
   useEffect(() => {
     if (!map || !imageryRevision) return;
-    refreshImagery(map, basemap, imageryRevision);
+    refreshImagery();
   }, [map, basemap, imageryRevision]);
 
   useEffect(() => {

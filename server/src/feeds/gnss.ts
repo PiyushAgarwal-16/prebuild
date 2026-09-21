@@ -108,6 +108,3 @@ export function stepRover(): RoverFrame {
   };
 }
 
-export function stationSnapshot(): StationFrame[] {
-  return stepStations();
-}

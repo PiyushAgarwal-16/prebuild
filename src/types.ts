@@ -46,6 +46,21 @@ export interface Parcel {
   registeredOn: string;
 }
 
+export type DocumentKind =
+  | "sale-deed"
+  | "sanctioned-plan"
+  | "encumbrance-certificate"
+  | "occupancy-certificate"
+  | "tax-receipt"
+  | "other";
+
+export interface StratumDocument {
+  id: string;
+  name: string;
+  kind: DocumentKind;
+  addedOn: string;
+}
+
 export interface Stratum {
   id: string;
   parcelId: string;
@@ -64,6 +79,7 @@ export interface Stratum {
   builtUpArea: number;
   registeredOn: string;
   encumbrance?: string;
+  documents?: StratumDocument[];
 }
 
 export type ConflictKind =

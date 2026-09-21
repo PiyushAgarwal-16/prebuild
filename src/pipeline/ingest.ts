@@ -1,7 +1,7 @@
 import type { Parcel, Stratum, StratumUse, Tenure } from "../types";
 import { ringAreaM2, ringCentroid } from "../lib/geo";
 import { composeUlpin, generateBase } from "../lib/ulpin";
-import type { DerivedBuilding } from "./types";
+import type { DerivedBuilding, Jurisdiction } from "./types";
 
 const USES = new Set<StratumUse>([
   "residential",
@@ -28,7 +28,10 @@ function asUse(value: string): StratumUse {
   return USES.has(value as StratumUse) ? (value as StratumUse) : "commercial";
 }
 
-export function toRegistry(buildings: DerivedBuilding[]): { parcels: Parcel[]; strata: Stratum[] } {
+export function toRegistry(
+  buildings: DerivedBuilding[],
+  jurisdiction: Jurisdiction,
+): { parcels: Parcel[]; strata: Stratum[] } {
   const parcels: Parcel[] = [];
   const strata: Stratum[] = [];
   const today = new Date().toISOString().slice(0, 10);
@@ -36,7 +39,7 @@ export function toRegistry(buildings: DerivedBuilding[]): { parcels: Parcel[]; s
   for (const building of buildings) {
     const centroid = ringCentroid(building.ring);
     const parcelId = newId("parcel");
-    const ulpinBase = generateBase("36", centroid);
+    const ulpinBase = generateBase(jurisdiction.stateCode, centroid);
 
     parcels.push({
       id: parcelId,
@@ -45,12 +48,12 @@ export function toRegistry(buildings: DerivedBuilding[]): { parcels: Parcel[]; s
       ring: building.ring,
       surveyNumber: building.sourceId,
       jurisdiction: {
-        stateCode: "36",
-        stateName: "Telangana",
+        stateCode: jurisdiction.stateCode,
+        stateName: jurisdiction.stateName,
         districtCode: "000",
-        districtName: "Unresolved",
+        districtName: jurisdiction.districtName,
         villageCode: "000000",
-        villageName: "Unresolved",
+        villageName: jurisdiction.villageName,
       },
       groundElevation: building.groundElevationM ?? 0,
       landUse: building.name ?? "Building footprint (OpenStreetMap)",

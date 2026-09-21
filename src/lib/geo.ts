@@ -1,3 +1,4 @@
+export { geohash, geohashDecode } from "../../shared/ulpin-core";
 import polygonClipping from "polygon-clipping";
 import turfArea from "@turf/area";
 import type { LngLat, Ring } from "../types";
@@ -17,9 +18,6 @@ export function unproject(origin: LngLat, x: number, z: number): LngLat {
   return [lng, lat];
 }
 
-export function projectRing(origin: LngLat, ring: Ring): [number, number][] {
-  return ring.map((p) => project(origin, p));
-}
 
 export function ringCentroid(ring: Ring): LngLat {
   const n = ring.length;
@@ -134,6 +132,22 @@ export function ringInsideRing(inner: Ring, outer: Ring): boolean {
   return inner.every((p) => pointInRing(p, outer));
 }
 
+/**
+ * Area of `inner` that falls outside `outer`. Measured rather than tested
+ * vertex-by-vertex: a footprint that coincides with its parcel boundary has
+ * every vertex *on* the edge, which a strict point-in-ring test rejects.
+ */
+export function outsideAreaM2(inner: Ring, outer: Ring): number {
+  if (inner.length < 3 || outer.length < 3) return 0;
+  const pieces = polygonClipping.difference([closed(inner)], [closed(outer)]);
+  if (!pieces.length) return 0;
+  return turfArea({
+    type: "Feature",
+    properties: {},
+    geometry: { type: "MultiPolygon", coordinates: pieces },
+  });
+}
+
 export function overlapAreaM2(a: Ring, b: Ring): number {
   if (a.length < 3 || b.length < 3) return 0;
   if (!ringsOverlap(a, b)) return 0;
@@ -155,83 +169,9 @@ export function scaleRing(ring: Ring, factor: number, shift: [number, number] = 
   });
 }
 
-export function rectRing(center: LngLat, widthM: number, depthM: number): Ring {
-  const hw = widthM / 2;
-  const hd = depthM / 2;
-  return [
-    unproject(center, -hw, -hd),
-    unproject(center, hw, -hd),
-    unproject(center, hw, hd),
-    unproject(center, -hw, hd),
-  ];
-}
 
-const GEOHASH_ALPHABET = "0123456789bcdefghjkmnpqrstuvwxyz";
 
-export function geohash(lat: number, lng: number, precision: number): string {
-  let latMin = -90;
-  let latMax = 90;
-  let lngMin = -180;
-  let lngMax = 180;
-  let hash = "";
-  let bit = 0;
-  let idx = 0;
-  let even = true;
-  while (hash.length < precision) {
-    if (even) {
-      const mid = (lngMin + lngMax) / 2;
-      if (lng >= mid) {
-        idx = idx * 2 + 1;
-        lngMin = mid;
-      } else {
-        idx *= 2;
-        lngMax = mid;
-      }
-    } else {
-      const mid = (latMin + latMax) / 2;
-      if (lat >= mid) {
-        idx = idx * 2 + 1;
-        latMin = mid;
-      } else {
-        idx *= 2;
-        latMax = mid;
-      }
-    }
-    even = !even;
-    if (++bit === 5) {
-      hash += GEOHASH_ALPHABET[idx];
-      bit = 0;
-      idx = 0;
-    }
-  }
-  return hash;
-}
 
-export function geohashDecode(hash: string): LngLat {
-  let latMin = -90;
-  let latMax = 90;
-  let lngMin = -180;
-  let lngMax = 180;
-  let even = true;
-  for (const ch of hash.toLowerCase()) {
-    const idx = GEOHASH_ALPHABET.indexOf(ch);
-    if (idx < 0) continue;
-    for (let b = 4; b >= 0; b--) {
-      const bitOn = (idx >> b) & 1;
-      if (even) {
-        const mid = (lngMin + lngMax) / 2;
-        if (bitOn) lngMin = mid;
-        else lngMax = mid;
-      } else {
-        const mid = (latMin + latMax) / 2;
-        if (bitOn) latMin = mid;
-        else latMax = mid;
-      }
-      even = !even;
-    }
-  }
-  return [(lngMin + lngMax) / 2, (latMin + latMax) / 2];
-}
 
 export function formatArea(m2: number): string {
   if (m2 >= 10000) return `${(m2 / 10000).toFixed(3)} ha`;

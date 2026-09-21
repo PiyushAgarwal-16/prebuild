@@ -10,6 +10,7 @@ interface BasemapDefinition {
   layerId: string;
   tiles: string[];
   attribution: string;
+  maxzoom: number;
   saturation: number;
   contrast: number;
 }
@@ -22,6 +23,7 @@ export const BASEMAPS: Record<BasemapId, BasemapDefinition> = {
     layerId: "basemap-street",
     tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
     attribution: "© OpenStreetMap contributors",
+    maxzoom: 19,
     saturation: -0.55,
     contrast: 0.05,
   },
@@ -34,6 +36,7 @@ export const BASEMAPS: Record<BasemapId, BasemapDefinition> = {
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     ],
     attribution: "Imagery © Esri, Maxar, Earthstar Geographics",
+    maxzoom: 19,
     saturation: -0.12,
     contrast: 0.04,
   },
@@ -51,6 +54,7 @@ export function buildStyle(active: BasemapId): maplibregl.StyleSpecification {
           type: "raster" as const,
           tiles: BASEMAPS[id].tiles,
           tileSize: 256,
+          maxzoom: BASEMAPS[id].maxzoom,
           attribution: BASEMAPS[id].attribution,
         },
       ]),
@@ -75,11 +79,11 @@ export function applyBasemap(map: maplibregl.Map, active: BasemapId): void {
   }
 }
 
-export function refreshImagery(map: maplibregl.Map, active: BasemapId, revision: number): void {
-  const definition = BASEMAPS[active];
-  const source = map.getSource(definition.sourceId) as maplibregl.RasterTileSource | undefined;
-  if (!source) return;
-  source.setTiles(
-    definition.tiles.map((t) => `${t}${t.includes("?") ? "&" : "?"}rev=${revision}`),
-  );
-}
+/**
+ * Tile endpoints are not cache-busted: appending a query parameter to
+ * tile.openstreetmap.org makes the browser treat each tile as a new
+ * cross-origin request and every one is refused. Street tiles do not change
+ * minute to minute anyway — the live part is the freshness metadata the feed
+ * reports, not a re-fetch of the raster.
+ */
+export function refreshImagery(): void {}

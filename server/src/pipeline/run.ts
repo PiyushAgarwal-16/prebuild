@@ -4,6 +4,7 @@ import { centroidOf, deriveBuilding } from "./derive/volumes.js";
 import { validateAll } from "./validate/topology.js";
 import { applyInference, inferUnits, type UnitInference } from "./ai/units.js";
 import { hasKey } from "./ai/openai.js";
+import { resolveJurisdiction, UNRESOLVED, type Jurisdiction } from "./sources/jurisdiction.js";
 import { MIN_BBOX_SPAN_DEG } from "./config.js";
 import type { BoundingBox, DerivedBuilding, ValidationReport } from "./types.js";
 
@@ -14,6 +15,7 @@ export interface PipelineResult {
   report: ValidationReport;
   inference: { attempted: number; applied: number; model: string | null; error: string | null };
   sources: { buildings: string; terrain: string };
+  jurisdiction: Jurisdiction;
 }
 
 const MAX_INFERENCE_CALLS = 6;
@@ -40,7 +42,11 @@ export async function runPipeline(
   options: { infer: boolean } = { infer: false },
 ): Promise<PipelineResult> {
   const { bbox, widened } = widen(input);
-  const sources = await fetchBuildings(bbox);
+  const centre: [number, number] = [(bbox.west + bbox.east) / 2, (bbox.south + bbox.north) / 2];
+  const [sources, jurisdiction] = await Promise.all([
+    fetchBuildings(bbox),
+    resolveJurisdiction(centre).catch(() => UNRESOLVED),
+  ]);
   const terrain = await sampleTerrain(sources.map(centroidOf));
 
   let buildings = sources.map((source, i) => deriveBuilding(source, terrain[i]));
@@ -95,6 +101,7 @@ export async function runPipeline(
     buildings,
     report: validateAll(buildings),
     inference,
+    jurisdiction,
     sources: {
       buildings: sources[0]?.attribution ?? "© OpenStreetMap contributors (ODbL)",
       terrain: terrain[0]?.dataset ?? "none",

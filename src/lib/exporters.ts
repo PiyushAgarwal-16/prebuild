@@ -9,7 +9,7 @@ import { formatArea, formatLngLat, ringAreaM2, ringCentroid } from "./geo";
 import { BAND_LABEL, describeLevel, parseUlpin } from "./ulpin";
 import { TENURE_LABEL, USE_LABEL } from "./palette";
 
-export function safeFilename(name: string): string {
+function safeFilename(name: string): string {
   return name.trim().replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "") || "registry";
 }
 

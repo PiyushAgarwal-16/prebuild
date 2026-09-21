@@ -1,8 +1,11 @@
 import type { Conflict, Parcel, Stratum, Tenure } from "../types";
-import { overlapAreaM2, ringInsideRing, ringsOverlap } from "./geo";
+import { outsideAreaM2, overlapAreaM2, ringAreaM2, ringsOverlap } from "./geo";
 import { validateUlpin } from "./ulpin";
 
 const EXCLUSIVE: Tenure[] = ["freehold", "leasehold", "government", "air-rights"];
+
+const MIN_OUTSIDE_AREA_M2 = 1;
+const OUTSIDE_FRACTION = 0.01;
 
 const isExclusive = (t: Tenure) => EXCLUSIVE.includes(t);
 
@@ -47,15 +50,20 @@ export function detectConflicts(parcels: Parcel[], strata: Stratum[]): Conflict[
     }
 
     const parcel = parcels.find((p) => p.id === s.parcelId);
-    if (parcel && !ringInsideRing(s.footprint, parcel.ring)) {
-      conflicts.push({
-        id: `outside-${s.id}`,
-        kind: "outside-parcel",
-        severity: "critical",
-        parcelId: s.parcelId,
-        subjects: [s.id],
-        message: `${s.label} extends beyond the surface boundary of ${parcel.surveyNumber}.`,
-      });
+    if (parcel) {
+      const outside = outsideAreaM2(s.footprint, parcel.ring);
+      const footprint = ringAreaM2(s.footprint);
+      const tolerance = Math.max(MIN_OUTSIDE_AREA_M2, footprint * OUTSIDE_FRACTION);
+      if (outside > tolerance) {
+        conflicts.push({
+          id: `outside-${s.id}`,
+          kind: "outside-parcel",
+          severity: "critical",
+          parcelId: s.parcelId,
+          subjects: [s.id],
+          message: `${s.label} extends ${outside.toFixed(1)} m² beyond the surface boundary of ${parcel.surveyNumber}.`,
+        });
+      }
     }
   }
 

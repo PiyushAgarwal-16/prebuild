@@ -3,6 +3,8 @@ import type { Stratum, StratumUse, Tenure, UlpinSource } from "../../types";
 import { useRegistry } from "../../store/registry";
 import { useUI } from "../../store/ui";
 import { conflictsFor } from "../../lib/conflicts";
+import { shareFor } from "../../lib/shares";
+import { DocumentVault } from "./DocumentVault";
 import { toDerivedBuilding } from "../../registry/fromWorkspace";
 import { lodgeSubmission } from "../../registry/client";
 import { formatArea, formatLngLat, ringAreaM2, ringCentroid } from "../../lib/geo";
@@ -99,6 +101,7 @@ function UlpinCard({ stratum, source }: { stratum: Stratum; source: UlpinSource 
 
 function StratumView({ stratum }: { stratum: Stratum }) {
   const parcels = useRegistry((s) => s.parcels);
+  const strata = useRegistry((s) => s.strata);
   const conflicts = useRegistry((s) => s.conflicts);
   const updateStratum = useRegistry((s) => s.updateStratum);
   const removeStratum = useRegistry((s) => s.removeStratum);
@@ -108,6 +111,10 @@ function StratumView({ stratum }: { stratum: Stratum }) {
   const parcel = parcels.find((p) => p.id === stratum.parcelId);
   const own = conflictsFor(conflicts, stratum.id);
   const centroid = useMemo(() => ringCentroid(stratum.footprint), [stratum.footprint]);
+  const share = useMemo(
+    () => (parcel ? shareFor(parcel, strata, stratum) : null),
+    [parcel, strata, stratum],
+  );
 
   return (
     <>
@@ -186,7 +193,20 @@ function StratumView({ stratum }: { stratum: Stratum }) {
             />
           }
         />
-        <Field label="Height" value={`${(stratum.zMax - stratum.zMin).toFixed(2)} m`} />
+        <Field label="Floor" value={`${BAND_LABEL[stratum.band]} · ${describeLevel(stratum.band, stratum.level)}`} />
+        <Field
+          label="Height range"
+          value={
+            <span className="font-mono text-[11px]">
+              {stratum.zMin.toFixed(2)} m to {stratum.zMax.toFixed(2)} m
+              <span className="text-faint"> ({(stratum.zMax - stratum.zMin).toFixed(2)} m)</span>
+            </span>
+          }
+        />
+        <Field
+          label="Parent ULPIN"
+          value={<span className="font-mono text-[10px] text-accent">{parcel?.ulpinBase ?? "—"}</span>}
+        />
         <Field label="Footprint" value={formatArea(ringAreaM2(stratum.footprint))} />
         <Field label="Carpet area" value={`${stratum.carpetArea} m²`} />
         <Field label="Built-up area" value={`${stratum.builtUpArea} m²`} />
@@ -199,6 +219,43 @@ function StratumView({ stratum }: { stratum: Stratum }) {
         <Field label="Registered" value={stratum.registeredOn} />
         <Field label="Encumbrance" value={stratum.encumbrance ?? "None recorded"} />
       </div>
+
+      {share && (
+        <div className="border-b border-line px-3 py-3">
+          <div className={sectionLabelClass}>Share of the parcel</div>
+          <div className="mt-2">
+            <Field
+              label="Undivided land share"
+              value={
+                <span>
+                  <b className="text-[12px]">{share.undividedLandShareM2} m²</b>
+                  <span className="text-faint"> of {share.parcelAreaM2} m²</span>
+                </span>
+              }
+            />
+            <Field label="Share fraction" value={`${share.sharePct}%`} />
+            <Field
+              label="Common-area rights"
+              value={
+                <span>
+                  <b className="text-[12px]">{share.commonAreaShareM2} m²</b>
+                  <span className="text-faint"> of {share.totalCommonM2} m²</span>
+                </span>
+              }
+            />
+            <Field
+              label="Basis"
+              value={
+                <span className="text-[10px] leading-snug text-faint">
+                  built-up ÷ {share.totalSaleableM2} m² saleable across {share.saleableUnits} units
+                </span>
+              }
+            />
+          </div>
+        </div>
+      )}
+
+      <DocumentVault stratum={stratum} />
 
       {own.length > 0 && (
         <div className="px-3 py-3">
