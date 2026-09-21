@@ -3,10 +3,12 @@ import type { Stratum, StratumUse, Tenure, UlpinSource } from "../../types";
 import { useRegistry } from "../../store/registry";
 import { useUI } from "../../store/ui";
 import { conflictsFor } from "../../lib/conflicts";
+import { toDerivedBuilding } from "../../registry/fromWorkspace";
+import { lodgeSubmission } from "../../registry/client";
 import { formatArea, formatLngLat, ringAreaM2, ringCentroid } from "../../lib/geo";
 import { BAND_LABEL, describeLevel, parseUlpin, validateUlpin } from "../../lib/ulpin";
 import { TENURE_COLOR, TENURE_LABEL, USE_COLOR, USE_LABEL } from "../../lib/palette";
-import { IconAlert, IconCheck, IconCopy, IconDocument, IconTrash } from "../icons";
+import { IconAlert, IconCheck, IconCopy, IconDocument, IconTrash, IconUpload } from "../icons";
 import { fieldLabelClass, microLabelBase, microLabelClass, sectionLabelClass } from "../ui/primitives";
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
@@ -315,7 +317,27 @@ function ParcelView() {
         ))}
       </div>
 
-      <div className="mt-auto border-t border-line p-3">
+      <div className="mt-auto space-y-2 border-t border-line p-3">
+        <button
+          onClick={async () => {
+            if (!own.length) {
+              showToast("Nothing to lodge — this parcel has no volumes");
+              return;
+            }
+            try {
+              const { submission } = await lodgeSubmission(
+                [toDerivedBuilding(parcel, strata)],
+                `${parcel.surveyNumber} · ${own.length} volumes`,
+              );
+              showToast(`${submission.reference} lodged for review`);
+            } catch (err) {
+              showToast(err instanceof Error ? err.message : "Lodgement failed");
+            }
+          }}
+          className="flex h-8 w-full items-center justify-center gap-1.5 rounded-sm bg-accent text-[11px] font-medium text-white hover:bg-accent-strong"
+        >
+          <IconUpload size={13} /> Lodge parcel for review
+        </button>
         <button
           onClick={() => {
             removeParcel(parcel.id);

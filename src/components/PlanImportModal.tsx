@@ -13,59 +13,11 @@ import {
 import { BAND_LABEL, BAND_ORDER } from "../lib/ulpin";
 import { USE_COLOR } from "../lib/palette";
 import { Shell, inputClass, labelClass } from "./modals";
+import { PlanEditor } from "./plan/PlanEditor";
+import { UnitInspector } from "./plan/UnitInspector";
+import { validatePlan } from "../lib/planValidation";
+import type { PlanUnit } from "../lib/plan";
 import { IconAlert, IconSparkle, IconUpload } from "./icons";
-
-const KIND_COLOR: Record<string, string> = {
-  apartment: USE_COLOR.residential,
-  commercial: USE_COLOR.commercial,
-  common: USE_COLOR.common,
-  circulation: USE_COLOR.common,
-  service: USE_COLOR.utility,
-  parking: USE_COLOR.parking,
-};
-
-function PlanPreview({ plan }: { plan: FloorPlan }) {
-  const pad = 1.5;
-  const w = plan.buildingW + pad * 2;
-  const d = plan.buildingD + pad * 2;
-  return (
-    <svg viewBox={`${-w / 2} ${-d / 2} ${w} ${d}`} className="h-44 w-full rounded-sm bg-base">
-      <rect
-        x={-plan.buildingW / 2}
-        y={-plan.buildingD / 2}
-        width={plan.buildingW}
-        height={plan.buildingD}
-        fill="none"
-        stroke="var(--color-line-strong)"
-        strokeWidth={0.22}
-      />
-      {plan.units.map((u, i) => (
-        <g key={`${u.label}-${i}`}>
-          <rect
-            x={u.x - u.w / 2}
-            y={u.z - u.d / 2}
-            width={u.w}
-            height={u.d}
-            fill={KIND_COLOR[u.kind] ?? "#8a8a8a"}
-            fillOpacity={0.3}
-            stroke={KIND_COLOR[u.kind] ?? "#8a8a8a"}
-            strokeWidth={0.16}
-          />
-          <text
-            x={u.x}
-            y={u.z}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize={Math.min(1.2, u.w / Math.max(u.label.length, 6) * 1.6)}
-            fill="var(--color-text)"
-          >
-            {u.label}
-          </text>
-        </g>
-      ))}
-    </svg>
-  );
-}
 
 export function PlanImportModal() {
   const open = useUI((s) => s.planOpen);
@@ -82,6 +34,9 @@ export function PlanImportModal() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [engine, setEngine] = useState<{ ready: boolean; model: string } | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<number | null>(null);
+  const [showImage, setShowImage] = useState(true);
+  const [underlay, setUnderlay] = useState({ x: 0, z: 0, scale: 1.4 });
 
   const [band, setBand] = useState<LevelBand>("F");
   const [startLevel, setStartLevel] = useState(1);
@@ -100,6 +55,25 @@ export function PlanImportModal() {
   }, [open]);
 
   const scale = useMemo(() => (plan && parcel ? fitScale(plan, parcel) : 1), [plan, parcel]);
+  const report = useMemo(
+    () => (plan ? validatePlan(plan) : { findings: [], invalid: new Set<number>(), ok: true, coverage: 0 }),
+    [plan],
+  );
+
+  const setUnits = (units: PlanUnit[]) => setPlan((p) => (p ? { ...p, units } : p));
+  const updateUnit = (index: number, next: PlanUnit) =>
+    setPlan((p) => (p ? { ...p, units: p.units.map((u, i) => (i === index ? next : u)) } : p));
+  const deleteUnit = (index: number) => {
+    setPlan((p) => (p ? { ...p, units: p.units.filter((_, i) => i !== index) } : p));
+    setSelectedUnit(null);
+  };
+  const addUnit = () =>
+    setPlan((p) => {
+      if (!p) return p;
+      const unit: PlanUnit = { label: `Space ${p.units.length + 1}`, kind: "apartment", x: 0, z: 0, w: 4, d: 4 };
+      setSelectedUnit(p.units.length);
+      return { ...p, units: [...p.units, unit] };
+    });
 
   const baseZ = useMemo(() => {
     const own = strata.filter((s) => s.parcelId === selectedParcelId);
@@ -182,8 +156,8 @@ export function PlanImportModal() {
   };
 
   return (
-    <Shell title="Digitise floor plan" onClose={() => setOpen(false)} wide>
-      <div className="grid gap-4 p-4 md:grid-cols-2">
+    <Shell title="Digitise floor plan" onClose={() => setOpen(false)} xwide>
+      <div className="grid gap-4 p-4 md:grid-cols-[330px_1fr]">
         <div className="space-y-3">
           <div
             onDragOver={(e) => e.preventDefault()}
@@ -239,7 +213,7 @@ export function PlanImportModal() {
             <p className="flex items-start gap-1.5 rounded-sm border border-[#e6d3a4] bg-[#fcf4e2] px-2.5 py-2 text-[10px] leading-relaxed text-[#7a5c1e]">
               <IconAlert size={12} />
               <span>
-                Vision extraction needs <span className="font-mono">NVIDIA_API_KEY</span> set for the dev
+                Vision extraction needs <span className="font-mono">OPENAI_API_KEY</span> set for the dev
                 server. Without it, load the sample plan to exercise the rest of the pipeline.
               </span>
             </p>
@@ -254,13 +228,93 @@ export function PlanImportModal() {
         <div className="space-y-3">
           {plan ? (
             <>
-              <PlanPreview plan={plan} />
+              <div className="grid grid-cols-[1fr_210px] gap-2">
+                <PlanEditor
+                  plan={plan}
+                  report={report}
+                  image={image}
+                  showImage={showImage}
+                  underlay={underlay}
+                  selected={selectedUnit}
+                  onSelect={setSelectedUnit}
+                  onChange={setUnits}
+                />
+                <UnitInspector
+                  unit={selectedUnit === null ? null : (plan.units[selectedUnit] ?? null)}
+                  index={selectedUnit}
+                  onChange={updateUnit}
+                  onDelete={deleteUnit}
+                  onAdd={addUnit}
+                />
+              </div>
+
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-faint">
                 <span>
-                  {plan.units.length} spaces · {plan.buildingW.toFixed(1)} × {plan.buildingD.toFixed(1)} m
+                  {plan.units.length} spaces · {plan.buildingW.toFixed(1)} × {plan.buildingD.toFixed(1)} m ·
+                  {" "}{(report.coverage * 100).toFixed(0)}% assigned
                 </span>
-                <span>scale {(scale * 100).toFixed(0)}%</span>
+                <label className="flex items-center gap-1.5 normal-case tracking-normal">
+                  <input type="checkbox" checked={showImage} onChange={(e) => setShowImage(e.target.checked)} />
+                  plan underlay
+                </label>
               </div>
+
+              {image && showImage && (
+                <div className="flex items-center gap-3 rounded-sm border border-line bg-raised px-2.5 py-1.5">
+                  <span className={labelClass}>align underlay</span>
+                  <input
+                    type="range"
+                    min={0.6}
+                    max={2.6}
+                    step={0.02}
+                    value={underlay.scale}
+                    onChange={(e) => setUnderlay((u) => ({ ...u, scale: Number(e.target.value) }))}
+                    className="flex-1"
+                    title="Scale the drawing until its building outline matches the footprint"
+                  />
+                  <div className="flex items-center gap-1">
+                    {([
+                      ["←", { x: -0.25, z: 0 }],
+                      ["→", { x: 0.25, z: 0 }],
+                      ["↑", { x: 0, z: -0.25 }],
+                      ["↓", { x: 0, z: 0.25 }],
+                    ] as const).map(([glyph, delta]) => (
+                      <button
+                        key={glyph}
+                        onClick={() => setUnderlay((u) => ({ ...u, x: u.x + delta.x, z: u.z + delta.z }))}
+                        className="h-6 w-6 rounded-xs border border-line text-[11px] text-dim hover:text-text"
+                      >
+                        {glyph}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setUnderlay({ x: 0, z: 0, scale: 1.4 })}
+                      className="ml-1 h-6 rounded-xs border border-line px-1.5 text-[10px] text-dim hover:text-text"
+                    >
+                      reset
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {report.findings.length > 0 ? (
+                <div className="max-h-28 overflow-y-auto rounded-sm border border-line bg-raised p-2">
+                  {report.findings.slice(0, 12).map((f, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedUnit(f.units[0] ?? null)}
+                      className="flex w-full items-start gap-1.5 py-1 text-left text-[11px] leading-snug text-[#8a3226] hover:underline"
+                    >
+                      <IconAlert size={11} className="mt-0.5 shrink-0" />
+                      {f.message}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-sm border border-line bg-raised px-2 py-1.5 text-[11px] text-[#2f6a4b]">
+                  No overlaps, nothing outside the footprint — ready to certify.
+                </div>
+              )}
             </>
           ) : (
             <div className="flex h-44 items-center justify-center rounded-sm border border-line bg-raised px-6 text-center text-[11px] leading-relaxed text-faint">
@@ -345,10 +399,15 @@ export function PlanImportModal() {
 
           <button
             onClick={commit}
-            disabled={!plan || !parcel}
-            className="h-8 w-full rounded-sm bg-text text-[11px] text-base hover:bg-accent disabled:opacity-40"
+            disabled={!plan || !parcel || !report.ok}
+            title={
+              plan && !report.ok
+                ? "Resolve the overlaps and out-of-bounds spaces before registering"
+                : undefined
+            }
+            className="h-8 w-full rounded-sm bg-accent text-[11px] font-medium text-white hover:bg-accent-strong disabled:opacity-40"
           >
-            Generate ULPINs & register
+            {plan && !report.ok ? "Corrections needed" : "Certify & generate ULPINs"}
           </button>
         </div>
       </div>

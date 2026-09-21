@@ -4,6 +4,7 @@ import type { Conflict, Parcel, Stratum } from "../types";
 import { volumeRegistry } from "../components/scene/StrataScene";
 import { useRegistry } from "../store/registry";
 import { toGeoJSON } from "./geojson";
+import { toCityJSON } from "./cityjson";
 import { formatArea, formatLngLat, ringAreaM2, ringCentroid } from "./geo";
 import { BAND_LABEL, describeLevel, parseUlpin } from "./ulpin";
 import { TENURE_LABEL, USE_LABEL } from "./palette";
@@ -49,6 +50,15 @@ export function exportGeoJSON() {
   downloadBlob(
     new Blob([JSON.stringify(doc, null, 2)], { type: "application/geo+json" }),
     "ulpin-3d-registry.geojson",
+  );
+}
+
+export function exportCityJSON() {
+  const { parcels, strata } = useRegistry.getState();
+  const doc = toCityJSON(parcels, strata);
+  downloadBlob(
+    new Blob([JSON.stringify(doc)], { type: "application/city+json" }),
+    "ulpin-3d-registry.city.json",
   );
 }
 

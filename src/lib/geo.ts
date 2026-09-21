@@ -1,3 +1,5 @@
+import polygonClipping from "polygon-clipping";
+import turfArea from "@turf/area";
 import type { LngLat, Ring } from "../types";
 
 const EARTH_R = 6378137;
@@ -43,17 +45,20 @@ export function ringCentroid(ring: Ring): LngLat {
   return [cx / (3 * area) + mean[0], cy / (3 * area) + mean[1]];
 }
 
+function closed(ring: Ring): Ring {
+  if (ring.length < 3) return ring;
+  const [fx, fy] = ring[0];
+  const [lx, ly] = ring[ring.length - 1];
+  return fx === lx && fy === ly ? ring : [...ring, ring[0]];
+}
+
 export function ringAreaM2(ring: Ring): number {
   if (ring.length < 3) return 0;
-  const origin = ringCentroid(ring);
-  const flat = projectRing(origin, ring);
-  let sum = 0;
-  for (let i = 0; i < flat.length; i++) {
-    const [x0, z0] = flat[i];
-    const [x1, z1] = flat[(i + 1) % flat.length];
-    sum += x0 * z1 - x1 * z0;
-  }
-  return Math.abs(sum) / 2;
+  return turfArea({
+    type: "Feature",
+    properties: {},
+    geometry: { type: "Polygon", coordinates: [closed(ring)] },
+  });
 }
 
 export function bbox(ring: Ring): [number, number, number, number] {
@@ -129,26 +134,16 @@ export function ringInsideRing(inner: Ring, outer: Ring): boolean {
   return inner.every((p) => pointInRing(p, outer));
 }
 
-export function overlapAreaM2(a: Ring, b: Ring, samples = 60): number {
+export function overlapAreaM2(a: Ring, b: Ring): number {
+  if (a.length < 3 || b.length < 3) return 0;
   if (!ringsOverlap(a, b)) return 0;
-  const [minX, minY, maxX, maxY] = bbox(a);
-  const stepX = (maxX - minX) / samples;
-  const stepY = (maxY - minY) / samples;
-  if (stepX <= 0 || stepY <= 0) return 0;
-  let hits = 0;
-  for (let i = 0; i < samples; i++) {
-    for (let j = 0; j < samples; j++) {
-      const p: LngLat = [minX + (i + 0.5) * stepX, minY + (j + 0.5) * stepY];
-      if (pointInRing(p, a) && pointInRing(p, b)) hits++;
-    }
-  }
-  const cellArea = ringAreaM2([
-    [minX, minY],
-    [minX + stepX, minY],
-    [minX + stepX, minY + stepY],
-    [minX, minY + stepY],
-  ]);
-  return hits * cellArea;
+  const pieces = polygonClipping.intersection([closed(a)], [closed(b)]);
+  if (!pieces.length) return 0;
+  return turfArea({
+    type: "Feature",
+    properties: {},
+    geometry: { type: "MultiPolygon", coordinates: pieces },
+  });
 }
 
 export function scaleRing(ring: Ring, factor: number, shift: [number, number] = [0, 0]): Ring {

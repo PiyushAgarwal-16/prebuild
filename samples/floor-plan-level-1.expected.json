@@ -1,0 +1,16 @@
+{
+  "_note": "Ground truth for floor-plan-level-1.png. Compare the extractor's output against this.",
+  "buildingW": 24,
+  "buildingD": 16,
+  "storeyHeight": 3.2,
+  "units": [
+    { "label": "Flat 1A",    "kind": "apartment",   "x": -6.5, "z": -4.6, "w": 9,    "d": 6.8 },
+    { "label": "Flat 1B",    "kind": "apartment",   "x":  6.5, "z": -4.6, "w": 9,    "d": 6.8 },
+    { "label": "Flat 1C",    "kind": "apartment",   "x": -6.5, "z":  4.6, "w": 9,    "d": 6.8 },
+    { "label": "Flat 1D",    "kind": "apartment",   "x":  6.5, "z":  4.6, "w": 9,    "d": 6.8 },
+    { "label": "Corridor",   "kind": "circulation", "x":  0,   "z":  0,   "w": 20,   "d": 2.4 },
+    { "label": "Lift Core",  "kind": "common",      "x":  0,   "z": -3.2, "w": 3.2,  "d": 3.2 },
+    { "label": "Stair Core", "kind": "common",      "x":  0,   "z":  3.2, "w": 3.2,  "d": 3.2 },
+    { "label": "Services",   "kind": "service",     "x":  0,   "z":  6.6, "w": 2.4,  "d": 2.4 }
+  ]
+}

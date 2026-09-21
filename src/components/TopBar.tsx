@@ -4,7 +4,7 @@ import { useRegistry } from "../store/registry";
 import { useRole } from "../store/role";
 import { useUI } from "../store/ui";
 import type { Workspace } from "../store/ui";
-import { exportCSV, exportGLB, exportGeoJSON, exportPNG } from "../lib/exporters";
+import { exportCSV, exportCityJSON, exportGLB, exportGeoJSON, exportPNG } from "../lib/exporters";
 import {
   IconAlert,
   IconCube,
@@ -232,6 +232,7 @@ export function TopBar() {
             <div className="pb-rise absolute right-0 top-9 z-30 w-52 overflow-hidden rounded-sm border border-line bg-surface shadow-pop">
               {[
                 ["GeoJSON (parcels + strata)", run("GeoJSON", exportGeoJSON)],
+                ["CityJSON (CityGML 3.0 model)", run("CityJSON", exportCityJSON)],
                 ["CSV register extract", run("CSV", exportCSV)],
                 ["GLB 3D model", run("GLB", exportGLB)],
                 ["PNG of 3D view", run("PNG", () => exportPNG(2))],

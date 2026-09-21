@@ -1,10 +1,10 @@
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import OpenAI from "openai";
 
-const NIM_BASE_URL = process.env.NVIDIA_BASE_URL || "https://integrate.api.nvidia.com/v1";
-const VISION_MODEL = "moonshotai/kimi-k2.6";
+const baseUrl = () => process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+const visionModel = () => process.env.OPENAI_VISION_MODEL || "gpt-4o";
 
 function readBody(req: import("http").IncomingMessage): Promise<string> {
   return new Promise((resolve) => {
@@ -34,14 +34,14 @@ function planBridge(): Plugin {
     name: "plan-extraction-bridge",
     configureServer(server) {
       server.middlewares.use("/api/plan-status", (_req, res) => {
-        json(res, { ready: Boolean(process.env.NVIDIA_API_KEY), model: VISION_MODEL });
+        json(res, { ready: Boolean(process.env.OPENAI_API_KEY), model: visionModel() });
       });
 
       server.middlewares.use("/api/extract-plan", async (req, res) => {
         if (req.method !== "POST") return json(res, { ok: false, error: "POST required" }, 405);
-        const apiKey = process.env.NVIDIA_API_KEY;
+        const apiKey = process.env.OPENAI_API_KEY;
         if (!apiKey) {
-          return json(res, { ok: false, error: "NVIDIA_API_KEY is not set for the dev server" }, 503);
+          return json(res, { ok: false, error: "OPENAI_API_KEY is not set for the dev server" }, 503);
         }
 
         let dataUrl = "";
@@ -58,9 +58,9 @@ function planBridge(): Plugin {
         }
 
         try {
-          const client = new OpenAI({ baseURL: NIM_BASE_URL, apiKey });
+          const client = new OpenAI({ baseURL: baseUrl(), apiKey });
           const completion = await client.chat.completions.create({
-            model: VISION_MODEL,
+            model: visionModel(),
             temperature: 0.1,
             max_tokens: 4096,
             messages: [
@@ -92,28 +92,23 @@ function planBridge(): Plugin {
   };
 }
 
-export default defineConfig({
-  plugins: [react(), tailwindcss(), planBridge()],
-  optimizeDeps: { exclude: ["maplibre-gl"] },
-  server: {
-    port: 5180,
-    proxy: {
-      "/api/live": {
-        target: `http://127.0.0.1:${process.env.LIVE_PORT || 5181}`,
-        changeOrigin: true,
-      },
-      "/api/pipeline": {
-        target: `http://127.0.0.1:${process.env.LIVE_PORT || 5181}`,
-        changeOrigin: true,
-      },
-      "/api/ai": {
-        target: `http://127.0.0.1:${process.env.LIVE_PORT || 5181}`,
-        changeOrigin: true,
-      },
-      "/api/registry": {
-        target: `http://127.0.0.1:${process.env.LIVE_PORT || 5181}`,
-        changeOrigin: true,
+export default defineConfig(({ mode }) => {
+  Object.assign(process.env, loadEnv(mode, process.cwd(), ""));
+  const api = {
+    target: `http://127.0.0.1:${process.env.LIVE_PORT || 5181}`,
+    changeOrigin: true,
+  };
+  return {
+    plugins: [react(), tailwindcss(), planBridge()],
+    optimizeDeps: { exclude: ["maplibre-gl"] },
+    server: {
+      port: 5180,
+      proxy: {
+        "/api/live": api,
+        "/api/pipeline": api,
+        "/api/ai": api,
+        "/api/registry": api,
       },
     },
-  },
+  };
 });

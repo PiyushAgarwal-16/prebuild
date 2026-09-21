@@ -16,11 +16,13 @@ export function Shell({
   onClose,
   children,
   wide,
+  xwide,
 }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
   wide?: boolean;
+  xwide?: boolean;
 }) {
   return (
     <div
@@ -30,7 +32,7 @@ export function Shell({
       <div
         onClick={(e) => e.stopPropagation()}
         className={`pb-rise flex max-h-[86vh] w-full flex-col overflow-hidden rounded-md border border-line bg-surface shadow-pop ${
-          wide ? "max-w-3xl" : "max-w-md"
+          xwide ? "max-w-6xl" : wide ? "max-w-3xl" : "max-w-md"
         }`}
       >
         <div className="flex items-center justify-between border-b border-line px-4 py-3">

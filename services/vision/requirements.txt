@@ -1,0 +1,12 @@
+fastapi>=0.115
+uvicorn[standard]>=0.32
+pydantic>=2.9
+numpy>=2.1
+pillow>=11.0
+shapely>=2.0
+pyproj>=3.7
+
+# Segmentation backend. Heavy: pulls torch (~2 GB) and downloads SAM weights on first use.
+segment-geospatial>=0.12
+torch>=2.4
+torchvision>=0.19

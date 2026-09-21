@@ -1,9 +1,10 @@
 import { MAX_STOREY_HEIGHT_M, MIN_STOREY_HEIGHT_M } from "../config.js";
-import { ringAreaM2 } from "../../geo.js";
+import { overlapAreaM2, rangesOverlap, ringAreaM2 } from "../../geo.js";
 import type { DerivedBuilding, Finding, ValidationReport } from "../types.js";
 
 const CONTINUITY_TOLERANCE_M = 0.05;
 const ENVELOPE_TOLERANCE_M = 0.5;
+const MIN_SHARED_AREA_M2 = 0.5;
 
 function ringIsDegenerate(ring: DerivedBuilding["ring"]): boolean {
   if (ring.length < 3) return true;
@@ -80,9 +81,37 @@ export function validateBuilding(building: DerivedBuilding): Finding[] {
     }
   }
 
-  const stack = building.volumes
-    .filter((v) => v.band === "G" || v.band === "F")
-    .sort((a, b) => a.zMin - b.zMin);
+  const occupied = building.volumes.filter((v) => v.band === "G" || v.band === "F");
+
+  for (let i = 0; i < occupied.length; i++) {
+    for (let j = i + 1; j < occupied.length; j++) {
+      const a = occupied[i];
+      const b = occupied[j];
+      const depth = rangesOverlap(a.zMin, a.zMax, b.zMin, b.zMax);
+      if (depth <= CONTINUITY_TOLERANCE_M) continue;
+      const shared = overlapAreaM2(a.footprint, b.footprint);
+      if (shared <= MIN_SHARED_AREA_M2) continue;
+      findings.push({
+        code: "volume-overlap",
+        severity: "critical",
+        message: `${a.label} and ${b.label} share ${shared.toFixed(1)} m² of floor over ${depth.toFixed(2)} m of height.`,
+        subjects: [a.ref, b.ref],
+      });
+    }
+  }
+
+  const levels = new Map<string, { label: string; zMin: number; zMax: number }>();
+  for (const v of occupied) {
+    const key = `${v.band}${v.level}`;
+    const entry = levels.get(key);
+    if (entry) {
+      entry.zMin = Math.min(entry.zMin, v.zMin);
+      entry.zMax = Math.max(entry.zMax, v.zMax);
+    } else {
+      levels.set(key, { label: `${v.band}${v.level}`, zMin: v.zMin, zMax: v.zMax });
+    }
+  }
+  const stack = [...levels.values()].sort((a, b) => a.zMin - b.zMin);
 
   for (let i = 0; i < stack.length - 1; i++) {
     const gap = stack[i + 1].zMin - stack[i].zMax;
@@ -92,9 +121,9 @@ export function validateBuilding(building: DerivedBuilding): Finding[] {
       severity: "critical",
       message:
         gap > 0
-          ? `${gap.toFixed(2)} m of unassigned space between ${stack[i].label} and ${stack[i + 1].label}.`
-          : `${Math.abs(gap).toFixed(2)} m of overlap between ${stack[i].label} and ${stack[i + 1].label}.`,
-      subjects: [stack[i].ref, stack[i + 1].ref],
+          ? `${gap.toFixed(2)} m of unassigned space between level ${stack[i].label} and ${stack[i + 1].label}.`
+          : `Level ${stack[i].label} and ${stack[i + 1].label} overlap by ${Math.abs(gap).toFixed(2)} m.`,
+      subjects: [stack[i].label, stack[i + 1].label],
     });
   }
 

@@ -1,3 +1,5 @@
+import polygonClipping from "polygon-clipping";
+import turfArea from "@turf/area";
 import type { LngLat } from "./types.js";
 
 const EARTH_R = 6378137;
@@ -48,22 +50,20 @@ export function ringCentroid(ring: LngLat[]): LngLat {
   return [cx / (3 * area) + mean[0], cy / (3 * area) + mean[1]];
 }
 
+function closed(ring: LngLat[]): LngLat[] {
+  if (ring.length < 3) return ring;
+  const [fx, fy] = ring[0];
+  const [lx, ly] = ring[ring.length - 1];
+  return fx === lx && fy === ly ? ring : [...ring, ring[0]];
+}
+
 export function ringAreaM2(ring: LngLat[]): number {
   if (ring.length < 3) return 0;
-  const origin = ringCentroid(ring);
-  const DEG = Math.PI / 180;
-  const R = 6378137;
-  const flat = ring.map((p) => [
-    (p[0] - origin[0]) * DEG * R * Math.cos(origin[1] * DEG),
-    (p[1] - origin[1]) * DEG * R,
-  ]);
-  let sum = 0;
-  for (let i = 0; i < flat.length; i++) {
-    const [x0, y0] = flat[i];
-    const [x1, y1] = flat[(i + 1) % flat.length];
-    sum += x0 * y1 - x1 * y0;
-  }
-  return Math.abs(sum) / 2;
+  return turfArea({
+    type: "Feature",
+    properties: {},
+    geometry: { type: "Polygon", coordinates: [closed(ring)] },
+  });
 }
 
 export function bbox(ring: LngLat[]): [number, number, number, number] {
@@ -133,4 +133,16 @@ export function ringsOverlap(a: LngLat[], b: LngLat[]): boolean {
 
 export function rangesOverlap(aMin: number, aMax: number, bMin: number, bMax: number): number {
   return Math.max(0, Math.min(aMax, bMax) - Math.max(aMin, bMin));
+}
+
+export function overlapAreaM2(a: LngLat[], b: LngLat[]): number {
+  if (a.length < 3 || b.length < 3) return 0;
+  if (!ringsOverlap(a, b)) return 0;
+  const pieces = polygonClipping.intersection([closed(a)], [closed(b)]);
+  if (!pieces.length) return 0;
+  return turfArea({
+    type: "Feature",
+    properties: {},
+    geometry: { type: "MultiPolygon", coordinates: pieces },
+  });
 }

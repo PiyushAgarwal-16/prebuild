@@ -1,11 +1,12 @@
 import { randomUUID } from "node:crypto";
-import { ringsOverlap, rangesOverlap } from "../geo.js";
+import { overlapAreaM2, rangesOverlap } from "../geo.js";
 import type { DerivedBuilding, Finding } from "../pipeline/types.js";
 import { validateAll } from "../pipeline/validate/topology.js";
 import { read, mutate } from "./store.js";
 import type { AuditEntry, Role, Submission } from "./types.js";
 
 const MIN_OVERLAP_M = 0.05;
+const MIN_SHARED_AREA_M2 = 0.5;
 
 export function detectConflicts(buildings: DerivedBuilding[]): Finding[] {
   const records = read().records;
@@ -14,13 +15,14 @@ export function detectConflicts(buildings: DerivedBuilding[]): Finding[] {
   for (const building of buildings) {
     for (const volume of building.volumes) {
       for (const record of records) {
-        if (!ringsOverlap(volume.footprint, record.footprint)) continue;
         const depth = rangesOverlap(volume.zMin, volume.zMax, record.zMin, record.zMax);
         if (depth <= MIN_OVERLAP_M) continue;
+        const shared = overlapAreaM2(volume.footprint, record.footprint);
+        if (shared <= MIN_SHARED_AREA_M2) continue;
         findings.push({
           code: "registered-volume-conflict",
           severity: "critical",
-          message: `${volume.label} overlaps registered volume ${record.ulpin} by ${depth.toFixed(2)} m of height.`,
+          message: `${volume.label} occupies ${shared.toFixed(1)} m² already registered to ${record.ulpin}, over ${depth.toFixed(2)} m of height.`,
           subjects: [volume.ref, record.ulpin],
         });
       }
