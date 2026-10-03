@@ -1,0 +1,152 @@
+.landing-root .applications {
+  padding-block: 140px 65px;
+}
+.landing-root .application-tabs {
+  display: flex;
+  margin-top: 60px;
+  border-bottom: 1px solid var(--line);
+}
+.landing-root .application-tabs button {
+  background: transparent;
+  padding: 20px 25px;
+  text-align: left;
+  font-size: 16px;
+  flex: 1;
+  color: #67636d;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px solid transparent;
+}
+.landing-root .application-tabs button span {
+  opacity: 0;
+}
+.landing-root .application-tabs button:hover {
+  background: #ebe9e4;
+}
+.landing-root .application-tabs button[aria-selected="true"] {
+  color: #6557df;
+  border-bottom-color: var(--purple);
+}
+.landing-root .application-tabs button[aria-selected="true"] span {
+  opacity: 1;
+}
+.landing-root .application-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 520px;
+  margin-top: 30px;
+}
+.landing-root .application-image {
+  position: relative;
+  overflow: hidden;
+  min-height: 440px;
+  background: #222;
+}
+.landing-root .application-image img {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  object-fit: cover;
+  object-position: 30% center;
+  filter: brightness(1.4);
+}
+.landing-root .strata-image img {
+  object-position: 80% 20%;
+  transform: scale(1.2);
+}
+.landing-root .rights-image img {
+  object-position: center;
+  filter: none;
+}
+.landing-root .image-bracket {
+  position: absolute;
+  inset: 24%;
+  border: 1px solid #ffffffa0;
+  background: #8e7bff0c;
+}
+.landing-root .image-bracket:before,
+.landing-root .image-bracket:after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #fff;
+  transform: rotate(45deg);
+}
+.landing-root .image-bracket:before {
+  left: -4px;
+  top: -4px;
+}
+.landing-root .image-bracket:after {
+  right: -4px;
+  bottom: -4px;
+}
+.landing-root .image-label {
+  position: absolute;
+  bottom: 25px;
+  left: 25px;
+  color: #eee;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+.landing-root .application-content {
+  padding: 35px 0 25px 55px;
+  display: flex;
+  flex-direction: column;
+}
+.landing-root .small-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #6d687b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.landing-root .application-content h3 {
+  margin-top: 28px;
+  max-width: 410px;
+}
+.landing-root .application-content > p {
+  font-size: 14px;
+  color: #6a676b;
+  max-width: 420px;
+  margin-top: 20px;
+}
+.landing-root .application-content dl {
+  margin: 28px 0;
+}
+.landing-root .application-content dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  border-top: 1px solid var(--line);
+  padding: 13px 0;
+  font-size: 12px;
+}
+.landing-root .application-content dt {
+  color: #706976;
+}
+.landing-root .application-content dd {
+  margin: 0;
+  text-align: right;
+}
+.landing-root .text-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  font-size: 13px;
+  color: #5140c5;
+  min-height: 44px;
+  width: fit-content;
+  margin-top: auto;
+}
+.landing-root .text-link:hover {
+  color: #25167a;
+}
+.landing-root .section-footnote {
+  font-size: 11px;
+  color: #716b74;
+  margin-top: 20px;
+  text-align: right;
+}

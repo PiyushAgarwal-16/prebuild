@@ -1,18 +1,10 @@
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { spawn, execFile } from "node:child_process";
-import { writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import path from "node:path";
+import OpenAI from "openai";
 
-/*
- * Local CLI bridge — lets the browser app use locally installed coding
- * agents (opencode, claude) as AI engines. Dev server only.
- *   GET  /api/cli-check            → { opencode: bool, claude: bool }
- *   POST /api/cli-agent            → { agent, prompt } ⇒ { ok, text?, error? }
- *   POST /api/upload-image         → { dataUrl } ⇒ { ok, path }  (temp file for CLI vision)
- */
+const baseUrl = () => process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+const visionModel = () => process.env.OPENAI_VISION_MODEL || "gpt-4o";
 
 function readBody(req: import("http").IncomingMessage): Promise<string> {
   return new Promise((resolve) => {
@@ -29,83 +21,94 @@ function json(res: import("http").ServerResponse, payload: unknown, code = 200) 
   res.end(JSON.stringify(payload));
 }
 
-function cliBridgePlugin(): Plugin {
-  const have = (cmd: string) =>
-    new Promise<boolean>((resolve) => {
-      execFile("which", [cmd], (err) => resolve(!err));
-    });
+function stripFences(text: string): string {
+  const fenced = /```(?:json)?\s*([\s\S]*?)```/.exec(text);
+  const body = fenced ? fenced[1] : text;
+  const start = body.indexOf("{");
+  const end = body.lastIndexOf("}");
+  return start >= 0 && end > start ? body.slice(start, end + 1) : body;
+}
 
-  const AGENTS: Record<string, { cmd: string; args: (p: string) => string[] }> = {
-    opencode: { cmd: "opencode", args: (p) => ["run", p] },
-    claude: { cmd: "claude", args: (p) => ["-p", p, "--output-format", "text"] },
-  };
-
+function planBridge(): Plugin {
   return {
-    name: "prebuild-cli-bridge",
+    name: "plan-extraction-bridge",
     configureServer(server) {
-      server.middlewares.use("/api/cli-check", (_req, res) => {
-        Promise.all([have("opencode"), have("claude")]).then(([opencode, claude]) =>
-          json(res, { opencode, claude }),
-        );
+      server.middlewares.use("/api/plan-status", (_req, res) => {
+        json(res, { ready: Boolean(process.env.OPENAI_API_KEY), model: visionModel() });
       });
 
-      server.middlewares.use("/api/cli-agent", (req, res) => {
-        if (req.method !== "POST") return json(res, { ok: false, error: "POST only" }, 405);
-        readBody(req).then(async (raw) => {
-          let body: { agent?: string; prompt?: string };
+      server.middlewares.use("/api/extract-plan", async (req, res) => {
+        if (req.method !== "POST") return json(res, { ok: false, error: "POST required" }, 405);
+        const apiKey = process.env.OPENAI_API_KEY;
+        if (!apiKey) {
+          return json(res, { ok: false, error: "OPENAI_API_KEY is not set for the dev server" }, 503);
+        }
+
+        let dataUrl = "";
+        let prompt = "";
+        try {
+          const parsed = JSON.parse(await readBody(req));
+          dataUrl = typeof parsed.dataUrl === "string" ? parsed.dataUrl : "";
+          prompt = typeof parsed.prompt === "string" ? parsed.prompt : "";
+        } catch {
+          return json(res, { ok: false, error: "Malformed request body" }, 400);
+        }
+        if (!dataUrl.startsWith("data:image/")) {
+          return json(res, { ok: false, error: "Expected an image data URL" }, 400);
+        }
+
+        try {
+          const client = new OpenAI({ baseURL: baseUrl(), apiKey });
+          const completion = await client.chat.completions.create({
+            model: visionModel(),
+            temperature: 0.1,
+            max_tokens: 4096,
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: prompt },
+                  { type: "image_url", image_url: { url: dataUrl } },
+                ],
+              },
+            ],
+          });
+          const message = completion.choices?.[0]?.message as
+            | { content?: string | null; reasoning_content?: string | null }
+            | undefined;
+          const text = message?.content?.trim() || message?.reasoning_content?.trim() || "";
+          if (!text) return json(res, { ok: false, error: "Model returned an empty response" }, 502);
           try {
-            body = JSON.parse(raw || "{}");
+            return json(res, { ok: true, plan: JSON.parse(stripFences(text)) });
           } catch {
-            return json(res, { ok: false, error: "Bad JSON body" }, 400);
+            return json(res, { ok: false, error: "Model response was not valid JSON" }, 502);
           }
-          const spec = body.agent ? AGENTS[body.agent] : undefined;
-          if (!spec || !body.prompt) return json(res, { ok: false, error: "Unknown agent" }, 400);
-
-          const installed = await have(spec.cmd);
-          if (!installed)
-            return json(res, { ok: false, error: `${spec.cmd} is not installed or not on PATH` }, 404);
-
-          const child = spawn(spec.cmd, spec.args(body.prompt), { stdio: ["ignore", "pipe", "pipe"] });
-          let out = "";
-          let err = "";
-          const timer = setTimeout(() => child.kill("SIGKILL"), 300_000);
-          child.stdout.on("data", (d) => (out += d));
-          child.stderr.on("data", (d) => (err += d));
-          child.on("error", (e) => {
-            clearTimeout(timer);
-            json(res, { ok: false, error: String(e) }, 500);
-          });
-          child.on("close", (code) => {
-            clearTimeout(timer);
-            if (code === 0) json(res, { ok: true, text: out });
-            else json(res, { ok: false, error: err.trim().slice(0, 500) || `${spec.cmd} exited ${code}` }, 500);
-          });
-        });
+        } catch (err) {
+          const detail = err instanceof Error ? err.message : "Vision request failed";
+          return json(res, { ok: false, error: detail.slice(0, 300) }, 502);
+        }
       });
-
-      server.middlewares.use("/api/upload-image", (req, res) => {
-        if (req.method !== "POST") return json(res, { ok: false, error: "POST only" }, 405);
-        readBody(req).then(async (raw) => {
-          try {
-            const { dataUrl } = JSON.parse(raw || "{}");
-            const m = String(dataUrl || "").match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
-            if (!m) return json(res, { ok: false, error: "Unsupported image" }, 400);
-            const ext = m[1] === "jpeg" ? "jpg" : m[1];
-            const file = path.join(tmpdir(), `prebuild-plan-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`);
-            await writeFile(file, Buffer.from(m[2], "base64"));
-            json(res, { ok: true, path: file });
-          } catch (e) {
-            json(res, { ok: false, error: String(e) }, 500);
-          }
-        });
-      });
-
-      // eslint-disable-next-line no-console
-      console.log("[prebuild] CLI bridge ready: opencode + claude");
     },
   };
 }
 
-export default defineConfig({
-  plugins: [react(), tailwindcss(), cliBridgePlugin()],
+export default defineConfig(({ mode }) => {
+  Object.assign(process.env, loadEnv(mode, process.cwd(), ""));
+  const api = {
+    target: `http://127.0.0.1:${process.env.LIVE_PORT || 5181}`,
+    changeOrigin: true,
+  };
+  return {
+    plugins: [react(), tailwindcss(), planBridge()],
+    optimizeDeps: { exclude: ["maplibre-gl"] },
+    server: {
+      port: 5180,
+      proxy: {
+        "/api/live": api,
+        "/api/pipeline": api,
+        "/api/ai": api,
+        "/api/registry": api,
+      },
+    },
+  };
 });

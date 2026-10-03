@@ -1,88 +1,107 @@
+export type LngLat = [number, number];
+export type Ring = LngLat[];
 export type Vec3 = [number, number, number];
+export type BasemapId = "street" | "satellite";
+export type UlpinSource = "generated" | "declared";
 
-export type PartGeo =
-  | { kind: "box"; size: Vec3 }
-  | { kind: "cylinder"; radius: number; height: number }
-  | { kind: "sphere"; radius: number }
-  | { kind: "cone"; radius: number; height: number };
+export type LevelBand = "S" | "B" | "G" | "F" | "A" | "E";
 
-export interface Part {
-  geo: PartGeo;
-  offset?: Vec3;
-  materialId?: string;
-  color?: string;
-  roughness?: number;
-  metalness?: number;
-  opacity?: number;
-  emissiveIntensity?: number;
+export type StratumUse =
+  | "residential"
+  | "commercial"
+  | "parking"
+  | "utility"
+  | "transport"
+  | "airspace"
+  | "common"
+  | "structural";
+
+export type Tenure =
+  | "freehold"
+  | "leasehold"
+  | "easement"
+  | "air-rights"
+  | "government"
+  | "common";
+
+export interface Jurisdiction {
+  stateCode: string;
+  stateName: string;
+  districtCode: string;
+  districtName: string;
+  villageCode: string;
+  villageName: string;
 }
 
-export type ObjectCategory =
-  | "floors"
-  | "walls"
-  | "ceilings"
-  | "doors"
-  | "windows"
-  | "stairs"
-  | "columns"
-  | "furniture"
-  | "fixtures"
-  | "plants"
-  | "decor";
+export interface Parcel {
+  id: string;
+  ulpinBase: string;
+  ulpinSource: UlpinSource;
+  ring: Ring;
+  surveyNumber: string;
+  jurisdiction: Jurisdiction;
+  groundElevation: number;
+  landUse: string;
+  holder: string;
+  registeredOn: string;
+}
 
-export interface SceneObject {
+export type DocumentKind =
+  | "sale-deed"
+  | "sanctioned-plan"
+  | "encumbrance-certificate"
+  | "occupancy-certificate"
+  | "tax-receipt"
+  | "other";
+
+export interface StratumDocument {
   id: string;
   name: string;
-  category: ObjectCategory;
-  position: Vec3;
-  rotationY: number;
-  scale: Vec3;
-  visible: boolean;
-  materialId: string;
-  parts: Part[];
-  castShadow: boolean;
-  receiveShadow: boolean;
+  kind: DocumentKind;
+  addedOn: string;
 }
 
-export type TimeOfDay = "day" | "sunset" | "night";
-
-export interface LightingState {
-  timeOfDay: TimeOfDay;
-  sunIntensity: number;
-  ambientIntensity: number;
-  interiorLightsOn: boolean;
-}
-
-export type MaterialCategory =
-  | "Stone"
-  | "Wood"
-  | "Concrete"
-  | "Metal"
-  | "Glass"
-  | "Paint"
-  | "Tile"
-  | "Fabric";
-
-export type TextureKind =
-  | "plain"
-  | "marble"
-  | "travertine"
-  | "wood"
-  | "concrete"
-  | "brushed"
-  | "glass"
-  | "tile"
-  | "terrazzo"
-  | "fabric"
-  | "velvet";
-
-export interface MaterialDef {
+export interface Stratum {
   id: string;
-  name: string;
-  category: MaterialCategory;
-  color: string;
-  roughness: number;
-  metalness: number;
-  opacity: number;
-  texture: TextureKind;
+  parcelId: string;
+  ulpin: string;
+  label: string;
+  band: LevelBand;
+  level: number;
+  unit: string;
+  footprint: Ring;
+  zMin: number;
+  zMax: number;
+  use: StratumUse;
+  tenure: Tenure;
+  holder: string;
+  carpetArea: number;
+  builtUpArea: number;
+  registeredOn: string;
+  encumbrance?: string;
+  documents?: StratumDocument[];
+}
+
+export type ConflictKind =
+  | "volume-overlap"
+  | "outside-parcel"
+  | "duplicate-ulpin"
+  | "invalid-ulpin"
+  | "inverted-extent";
+
+export interface Conflict {
+  id: string;
+  kind: ConflictKind;
+  severity: "critical" | "warning";
+  parcelId: string;
+  subjects: string[];
+  message: string;
+}
+
+export interface UlpinParts {
+  base: string;
+  band: LevelBand;
+  level: number;
+  unit: string;
+  check: string;
 }

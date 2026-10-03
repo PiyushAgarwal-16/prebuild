@@ -1,0 +1,42 @@
+.landing-root .site-footer {
+  padding: 70px var(--gutter) 25px;
+}
+.landing-root .footer-top {
+  display: flex;
+  align-items: start;
+  gap: 50px;
+}
+.landing-root .footer-top > p {
+  font-size: 13px;
+  color: #706976;
+  max-width: 190px;
+  margin-right: auto;
+}
+.landing-root .footer-top > div {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px 45px;
+  font-size: 12px;
+}
+.landing-root .footer-top a:hover {
+  color: var(--purple);
+}
+.landing-root .footer-statement {
+  font-size: clamp(64px, 11vw, 170px);
+  font-weight: 300;
+  line-height: 0.97;
+  letter-spacing: -0.04em;
+  margin: 85px 0;
+}
+.landing-root .footer-statement span {
+  color: #888092;
+}
+.landing-root .footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 25px;
+  border-top: 1px solid var(--line);
+  padding-top: 25px;
+  font-size: 10px;
+  color: #706976;
+}

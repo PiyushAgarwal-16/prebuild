@@ -1,39 +1,61 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/dm-sans.woff2") format("woff2");
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
-  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  /* Warm-neutral light workspace */
-  --color-void: oklch(0.945 0.003 90);
-  --color-base: oklch(0.99 0.002 95);
-  --color-surface: oklch(1 0 0);
-  --color-raised: oklch(0.962 0.003 95);
-  --color-hover: oklch(0.94 0.004 95);
-  --color-line: oklch(0.905 0.004 95);
-  --color-line-strong: oklch(0.835 0.005 95);
+  /* Landing palette: paper ground, white cards, ink type, violet accent */
+  --color-void: #f7f6f2;
+  --color-base: #fbfaf8;
+  --color-surface: #ffffff;
+  --color-raised: #f2f0ec;
+  --color-hover: #ebe9e3;
+  --color-line: #d7d5d1;
+  --color-line-strong: #bfbcb6;
 
-  --color-text: oklch(0.24 0.006 85);
-  --color-dim: oklch(0.47 0.006 85);
-  --color-faint: oklch(0.60 0.006 85);
+  --color-text: #252527;
+  --color-dim: #5a5a5e;
+  --color-faint: #8b8b90;
 
-  /* Brass accent, deepened for light backgrounds */
-  --color-accent: oklch(0.58 0.10 76);
-  --color-accent-strong: oklch(0.66 0.11 78);
-  --color-accent-dim: oklch(0.75 0.09 78);
+  --color-accent: #7165ed;
+  --color-accent-strong: #5d50e6;
+  --color-accent-dim: #a79cff;
 
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 12px;
+  --color-ink: #1d1d1e;
+  --color-ink-line: #ffffff25;
 
-  --shadow-pop: 0 2px 6px rgb(40 36 24 / 0.06), 0 16px 48px rgb(40 36 24 / 0.12);
-  --shadow-soft: 0 1px 3px rgb(40 36 24 / 0.05), 0 6px 20px rgb(40 36 24 / 0.07);
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 4px;
+
+  --shadow-pop: 0 2px 6px rgb(37 37 39 / 0.06), 0 6px 30px rgb(0 0 0 / 0.12);
+  --shadow-soft: 0 1px 2px rgb(37 37 39 / 0.04), 0 6px 30px rgb(0 0 0 / 0.05);
 }
 
 html,
 body,
 #root {
   height: 100%;
+}
+
+html[data-view="landing"],
+html[data-view="landing"] body,
+html[data-view="landing"] #root {
+  height: auto;
+  overflow: visible;
+}
+
+html:not([data-view="landing"]),
+html:not([data-view="landing"]) body,
+html:not([data-view="landing"]) #root {
   overflow: hidden;
 }
 
@@ -46,7 +68,7 @@ body {
 }
 
 ::selection {
-  background: color-mix(in oklch, var(--color-accent) 22%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 22%, transparent);
 }
 
 *::-webkit-scrollbar {

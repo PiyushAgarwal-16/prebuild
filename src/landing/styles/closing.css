@@ -1,0 +1,16 @@
+.landing-root .closing {
+  height: 640px;
+  display: grid;
+  place-items: center;
+}
+.landing-root .closing-content {
+  text-align: center;
+  padding: 30px;
+}
+.landing-root .closing h2 {
+  font-size: clamp(40px, 5vw, 74px);
+  font-weight: 300;
+}
+.landing-root .closing .light-button {
+  margin-top: 40px;
+}

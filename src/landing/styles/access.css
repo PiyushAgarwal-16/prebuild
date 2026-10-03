@@ -1,0 +1,51 @@
+.landing-root .access-section {
+  padding-block: 55px 120px;
+}
+.landing-root .access-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 60px;
+  border-top: 1px solid var(--line);
+}
+.landing-root .access-columns article {
+  padding: 35px 50px 0 0;
+}
+.landing-root .access-columns article + article {
+  padding-left: 50px;
+  border-left: 1px solid var(--line);
+}
+.landing-root .access-columns h3 {
+  margin-top: 30px;
+}
+.landing-root .access-columns p {
+  max-width: 400px;
+  font-size: 14px;
+  color: #716b74;
+  margin-block: 25px;
+}
+.landing-root .access-columns .text-link {
+  margin-top: 20px;
+}
+.landing-root .access-columns details {
+  font-size: 13px;
+  margin-top: 38px;
+}
+.landing-root .access-columns summary {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  color: #5140c5;
+  list-style: none;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.landing-root .access-columns summary::-webkit-details-marker {
+  display: none;
+}
+.landing-root .integration-details code {
+  font-size: 11px;
+  line-height: 1.9;
+}
+.landing-root .integration-details p {
+  font-size: 12px;
+}

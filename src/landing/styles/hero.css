@@ -1,0 +1,84 @@
+.landing-root .hero {
+  height: 100svh;
+  min-height: 640px;
+}
+.landing-root .hero-heading {
+  position: absolute;
+  bottom: 13.5%;
+  left: 24px;
+  right: 24px;
+  text-align: center;
+  pointer-events: none;
+}
+.landing-root .hero h1 {
+  font-size: clamp(42px, 4.5vw, 86px);
+  font-weight: 300;
+  line-height: 1.06;
+  letter-spacing: -0.04em;
+}
+.landing-root .hero-heading p {
+  font-size: 16px;
+  color: #e3e1de;
+  margin-top: 20px;
+}
+.landing-root .mobile-break {
+  display: none;
+}
+.landing-root .hero-caption {
+  position: absolute;
+  bottom: 29px;
+  left: 35px;
+  color: #d0d0ce;
+  font-size: 10px;
+  letter-spacing: 0.035em;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.landing-root .status-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background: #a79cff;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.landing-root .hero-caption > span:nth-child(2) {
+  opacity: 0.5;
+  margin: 0 5px;
+}
+.landing-root .scan-controls {
+  position: absolute;
+  right: 32px;
+  top: 135px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 11px;
+  color: #ddd;
+}
+.landing-root .scan-toggle {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: #17171980;
+  color: white;
+  padding: 9px 12px;
+  border: 1px solid #ffffff25;
+  border-radius: 3px;
+}
+.landing-root .scan-toggle svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  fill: none;
+}
+.landing-root .scroll-cue {
+  position: absolute;
+  right: 35px;
+  bottom: 25px;
+}
+.landing-root .scroll-cue:hover {
+  transform: translateY(3px);
+}

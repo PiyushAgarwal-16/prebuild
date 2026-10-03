@@ -1,0 +1,65 @@
+.landing-root .section-frame {
+  position: relative;
+  margin-inline: 40px;
+  border-inline: 1px dashed var(--line);
+  padding-inline: var(--gutter);
+}
+.landing-root .intro {
+  padding-top: 160px;
+  padding-bottom: 60px;
+  min-height: 660px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-bottom: 1px dashed var(--line);
+}
+.landing-root .intro h2 {
+  color: var(--purple);
+  text-align: center;
+  font-size: clamp(40px, 4.75vw, 70px);
+  font-weight: 300;
+  max-width: 1000px;
+  margin: 0 auto;
+  line-height: 1.15;
+}
+.landing-root .intro-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-top: 85px;
+  gap: 50px;
+}
+.landing-root .intro-bottom p {
+  max-width: 405px;
+  font-size: 15px;
+  color: #69676b;
+}
+.landing-root .section-name {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: #6a60d2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.landing-root .section-name i,
+.landing-root .frame-node {
+  width: 7px;
+  height: 7px;
+  background: #b9b6c0;
+  transform: rotate(45deg);
+}
+.landing-root .section-name i {
+  background: var(--purple);
+}
+.landing-root .frame-node {
+  position: absolute;
+  bottom: -4px;
+}
+.landing-root .frame-node.left {
+  left: -4px;
+}
+.landing-root .frame-node.right {
+  right: -4px;
+}

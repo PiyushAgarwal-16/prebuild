@@ -1,0 +1,113 @@
+.landing-root .demo-section {
+  padding-top: 85px;
+  padding-bottom: 100px;
+}
+.landing-root .demo-workspace {
+  margin-top: 60px;
+  border: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  background: #faf9f6;
+}
+.landing-root .demo-summary {
+  padding: 35px;
+  border-right: 1px solid var(--line);
+}
+.landing-root .demo-summary h3 {
+  font-size: 28px;
+  margin-top: 28px;
+}
+.landing-root .demo-summary p {
+  font-size: 12px;
+  margin-top: 12px;
+  color: #716c74;
+  max-width: 250px;
+}
+.landing-root .demo-asset-mark {
+  width: 150px;
+  margin: 30px auto;
+}
+.landing-root .demo-asset-mark svg {
+  fill: #e9e4fc;
+  stroke: #9385db;
+  stroke-width: 1;
+}
+.landing-root .demo-caption {
+  font-size: 8px;
+  letter-spacing: 0.09em;
+  color: #777078;
+}
+.landing-root .demo-flow {
+  padding: 25px 40px;
+  display: flex;
+  flex-direction: column;
+}
+.landing-root .workflow-steps {
+  padding: 0;
+  list-style: none;
+  margin: 0;
+}
+.landing-root .workflow-steps li {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line);
+  color: #6e6873;
+  font-size: 14px;
+}
+.landing-root .step-number {
+  font-size: 11px;
+}
+.landing-root .step-state {
+  margin-left: auto;
+  font-size: 10px;
+}
+.landing-root .workflow-steps li.current {
+  color: #6551d3;
+}
+.landing-root .workflow-steps li.done {
+  color: #303035;
+}
+.landing-root .workflow-steps li.done .step-number {
+  color: #6551d3;
+}
+.landing-root .demo-next {
+  padding-top: 25px;
+}
+.landing-root .demo-next p {
+  min-height: 45px;
+  font-size: 12px;
+  color: #6d6772;
+  max-width: 430px;
+}
+.landing-root .dark-button,
+.landing-root .light-button {
+  display: inline-flex;
+  gap: 30px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  font-size: 13px;
+  background: #252527;
+  color: #fff;
+  border-radius: 3px;
+  margin-top: 15px;
+}
+.landing-root .dark-button:hover {
+  background: #6353d2;
+}
+.landing-root .reset-button {
+  background: none;
+  padding: 15px;
+  font-size: 11px;
+  color: #6d6870;
+  text-decoration: underline;
+}
+.landing-root .light-button {
+  background: var(--paper);
+  color: #29282c;
+}
+.landing-root .light-button:hover {
+  background: #ded8ff;
+}
