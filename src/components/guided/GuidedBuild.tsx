@@ -105,6 +105,7 @@ export function GuidedBuild() {
         try {
           const { submission } = await lodgeSubmission(
             [toDerivedBuilding(parcel, strata)],
+            parcel.jurisdiction.stateCode,
             `Guided build · ${own.length} volumes`,
           );
           setLodged(true);

@@ -189,7 +189,7 @@ export function toCityJSON(parcels: Parcel[], strata: Stratum[]): CityJSON {
       referenceSystem: `https://www.opengis.net/def/crs/EPSG/0/${crs.epsg}`,
       title: "ULPIN 3D volumetric cadastre extract",
       crsName: crs.name,
-      heightReference: "Parcel ground datum (EGM96 orthometric, ASTER GDEM) plus local extent",
+      heightReference: "Parcel ground datum (orthometric) plus local extent",
       geographicalExtent: xs.length
         ? [Math.min(...xs), Math.min(...ys), Math.min(...zs), Math.max(...xs), Math.max(...ys), Math.max(...zs)]
         : undefined,

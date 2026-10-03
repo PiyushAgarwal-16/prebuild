@@ -5,7 +5,7 @@ import { useViewport } from "../../store/viewport";
 import { runPipeline } from "../../pipeline/client";
 import { lodgeSubmission } from "../../registry/client";
 import { toRegistry } from "../../pipeline/ingest";
-import type { PipelineResult } from "../../pipeline/types";
+import type { ExtractMode, PipelineResult } from "../../pipeline/types";
 import { IconAlert, IconCheck, IconClose, IconStack } from "../icons";
 import { fieldLabelClass } from "../ui/primitives";
 
@@ -32,6 +32,7 @@ export function PipelineModal() {
   const ingest = useRegistry((s) => s.ingest);
 
   const [infer, setInfer] = useState(true);
+  const [extract, setExtract] = useState<ExtractMode>("off");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PipelineResult | null>(null);
@@ -68,7 +69,7 @@ export function PipelineModal() {
     setError(null);
     setResult(null);
     try {
-      setResult(await runPipeline(bounds, infer));
+      setResult(await runPipeline(bounds, infer, extract));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Pipeline failed");
     } finally {
@@ -81,7 +82,7 @@ export function PipelineModal() {
     setLodging(true);
     setError(null);
     try {
-      const { submission } = await lodgeSubmission(result.buildings, null);
+      const { submission } = await lodgeSubmission(result.buildings, result.jurisdiction.stateCode, null);
       showToast(`${submission.reference} lodged for review`);
       setOpen(false);
       setResult(null);
@@ -144,10 +145,30 @@ export function PipelineModal() {
             Use model inference to classify each level
           </label>
 
+          <label className="mt-2 flex items-center gap-2 text-[12px] text-dim">
+            <span>Satellite imagery</span>
+            <select
+              value={extract}
+              onChange={(e) => setExtract(e.target.value as ExtractMode)}
+              className="h-7 rounded-sm border border-line bg-base px-2 text-[11px] text-text"
+            >
+              <option value="off">Not used</option>
+              <option value="report">Cross-check footprints (report only)</option>
+              <option value="add">Cross-check and add unmapped candidates</option>
+            </select>
+          </label>
+          {extract !== "off" && (
+            <div className="mt-1 text-[10px] leading-relaxed text-faint">
+              Needs the vision service running. Segmenting imagery on CPU takes a few minutes.
+            </div>
+          )}
+
           {busy && (
             <div className="mt-3 rounded-sm border border-line bg-raised px-3 py-2 text-[11px] text-dim">
               <span className="pb-shimmer">
-                {elapsed < 6
+                {extract !== "off" && elapsed >= 6
+                  ? "Segmenting satellite imagery…"
+                  : elapsed < 6
                   ? "Querying OpenStreetMap for building footprints…"
                   : elapsed < 14
                     ? "Sampling terrain for a ground datum…"
@@ -196,6 +217,42 @@ export function PipelineModal() {
                     : "Could not be resolved — identifiers will carry state code 00"}
                 </span>
               </div>
+
+              {result.extraction.attempted && (
+                <div className="mt-3 rounded-sm border border-line bg-raised px-3 py-2 text-[11px] leading-relaxed text-dim">
+                  {result.extraction.error ? (
+                    <span className="text-[#cc3b2e]">Imagery extraction failed — {result.extraction.error}</span>
+                  ) : (
+                    <>
+                      <div className="text-text">
+                        {result.extraction.backend?.toUpperCase()} found {result.extraction.footprints} candidate
+                        footprints at {result.extraction.gsdM} m/px
+                        {result.extraction.added > 0 ? `, ${result.extraction.added} added as unmapped` : ""}
+                      </div>
+                      {result.extraction.accuracy && (
+                        <div className="mt-1 font-mono text-[10px]">
+                          vs OSM: {Math.round(result.extraction.accuracy.insideRate * 100)}% of detections inside a
+                          mapped building · {Math.round(result.extraction.accuracy.coverageRecall * 100)}% of mapped
+                          buildings covered · {Math.round(result.extraction.accuracy.recall * 100)}% matched at IoU 0.5
+                        </div>
+                      )}
+                      {result.extraction.accuracy && !result.extraction.accuracy.referenceComplete && (
+                        <div className="mt-1 text-[10px] text-faint">
+                          OSM reference was capped, so these rates are unreliable and nothing was added.
+                        </div>
+                      )}
+                      <div className="mt-1 text-[10px] text-faint">
+                        {result.extraction.tileSource} · shape-filtered SAM masks
+                        {result.extraction.classifier?.model
+                          ? ` · ${result.extraction.classifier.model} dropped ${result.extraction.classifier.dropped} of ${result.extraction.classifier.attempted} non-buildings`
+                          : result.extraction.classifier?.error
+                            ? ` · classifier off: ${result.extraction.classifier.error}`
+                            : ""}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
 
               <div className="mt-3 text-[11px] text-dim">
                 {result.inference.applied > 0

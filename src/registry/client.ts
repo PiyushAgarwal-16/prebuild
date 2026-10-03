@@ -19,11 +19,12 @@ async function call<T>(path: string, role: Role, init?: RequestInit): Promise<T>
 
 export function lodgeSubmission(
   buildings: DerivedBuilding[],
+  stateCode: string,
   note: string | null,
 ): Promise<{ submission: Submission }> {
   return call<{ submission: Submission }>("/submissions", "surveyor", {
     method: "POST",
-    body: JSON.stringify({ buildings, note }),
+    body: JSON.stringify({ buildings, stateCode, note }),
   });
 }
 

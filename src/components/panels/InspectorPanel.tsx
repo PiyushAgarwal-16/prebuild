@@ -384,6 +384,7 @@ function ParcelView() {
             try {
               const { submission } = await lodgeSubmission(
                 [toDerivedBuilding(parcel, strata)],
+                parcel.jurisdiction.stateCode,
                 `${parcel.surveyNumber} · ${own.length} volumes`,
               );
               showToast(`${submission.reference} lodged for review`);

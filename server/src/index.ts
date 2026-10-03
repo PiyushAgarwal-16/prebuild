@@ -76,8 +76,10 @@ app.get("/api/pipeline/run", async (c) => {
     return c.json({ ok: false, error: "bbox=south,west,north,east required, at most 0.08 deg per side" }, 400);
   }
   const infer = c.req.query("infer") === "1";
+  const extractParam = c.req.query("extract");
+  const extract = extractParam === "add" ? "add" : extractParam === "1" ? "report" : null;
   try {
-    const result = await runPipeline(bbox, { infer });
+    const result = await runPipeline(bbox, { infer, extract });
     return c.json({ ok: true, ...result });
   } catch (err) {
     return c.json({ ok: false, error: err instanceof Error ? err.message : "pipeline failed" }, 502);

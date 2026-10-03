@@ -36,7 +36,12 @@ function entry(actor: Role, action: string, from: Submission["state"] | null, to
   return { at: new Date().toISOString(), actor, action, note, from, to };
 }
 
-export function lodge(buildings: DerivedBuilding[], note: string | null, actor: Role = "surveyor"): Submission {
+export function lodge(
+  buildings: DerivedBuilding[],
+  stateCode: string,
+  note: string | null,
+  actor: Role = "surveyor",
+): Submission {
   const validation = validateAll(buildings);
   const conflicts = detectConflicts(buildings);
   const now = new Date().toISOString();
@@ -49,6 +54,7 @@ export function lodge(buildings: DerivedBuilding[], note: string | null, actor: 
     lodgedBy: actor,
     lodgedAt: now,
     decidedAt: null,
+    stateCode,
     buildings,
     validation,
     conflicts,

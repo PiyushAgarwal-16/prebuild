@@ -41,6 +41,7 @@ export interface Submission {
   lodgedBy: Role;
   lodgedAt: string;
   decidedAt: string | null;
+  stateCode: string;
   buildings: DerivedBuilding[];
   validation: ValidationReport;
   conflicts: Finding[];

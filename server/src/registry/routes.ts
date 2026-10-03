@@ -19,14 +19,18 @@ registryRoutes.post("/submissions", async (c) => {
   if (role !== "surveyor") return c.json({ ok: false, error: "Only a surveyor may lodge" }, 403);
 
   const body = (await c.req.json().catch(() => null)) as
-    | { buildings?: DerivedBuilding[]; note?: string }
+    | { buildings?: DerivedBuilding[]; stateCode?: string; note?: string }
     | null;
   const buildings = body?.buildings;
   if (!Array.isArray(buildings) || !buildings.length) {
     return c.json({ ok: false, error: "buildings[] required" }, 400);
   }
+  const stateCode = body?.stateCode;
+  if (typeof stateCode !== "string" || !/^\d{2}$/.test(stateCode)) {
+    return c.json({ ok: false, error: "stateCode must be a 2-digit LGD state code" }, 400);
+  }
 
-  const submission = lodge(buildings, body?.note?.slice(0, 500) ?? null, role);
+  const submission = lodge(buildings, stateCode, body?.note?.slice(0, 500) ?? null, role);
   return c.json({ ok: true, submission }, 201);
 });
 

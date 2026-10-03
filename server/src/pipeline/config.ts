@@ -11,8 +11,15 @@ export const CACHE_TTL_MS = 5 * 60_000;
 
 export const USER_AGENT = "ulpin3d/0.1 (vertical cadastre prototype)";
 
-export const TERRAIN_ENDPOINT = "https://api.opentopodata.org/v1";
-export const TERRAIN_DATASET = process.env.TERRAIN_DATASET || "aster30m";
+export const COPERNICUS_BUCKET = "https://copernicus-dem-30m.s3.amazonaws.com";
+export const COPERNICUS_DATASET = "Copernicus GLO-30 DSM (EGM2008 orthometric)";
+
+export const VISION_URL = process.env.VISION_URL || "http://127.0.0.1:5182";
+export const VISION_TIMEOUT_MS = 15 * 60_000;
+export const EXTRACT_MIN_CONFIDENCE = 0.7;
+export const EXTRACT_MATCH_IOU = 0.5;
+export const EXTRACT_NOVEL_OVERLAP = 0.2;
+export const EXTRACT_INSIDE_COVER = 0.5;
 
 export const DEFAULT_STOREY_HEIGHT_M = 3.2;
 export const DEFAULT_BASEMENT_HEIGHT_M = 3.0;

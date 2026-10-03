@@ -32,7 +32,7 @@ deliberately conservative: a capability is "built" only if it has been run and o
 
 | Required | Status | What actually runs |
 | --- | --- | --- |
-| Automated building extraction | **Not built** | Footprints are downloaded from sources that already extracted them. Nothing is extracted from imagery here |
+| Automated building extraction | **Partial — low accuracy** | SAM vit_b over satellite tiles in a Python sidecar, wired into the pipeline and cross-checked against OSM. Measured on Bengaluru: 65% of detections fall inside a mapped building, 44% of mapped buildings are covered, 23% match at IoU 0.5. A gpt-4o crop check trades recall for precision (79% inside / 28% covered). See `services/vision/README.md` |
 | Floor segmentation | **Partial** | A vision model reads a floor plan into rectangles; a text model classifies levels from metadata. Neither segments imagery or point clouds |
 | Vertical parcel delineation | **Built** | Rule-based: footprint × storey height → banded volumes with signed elevations |
 | Intelligent topology validation | **Built — strongest capability** | Eight checks that gate approval, plus conflict detection against the live register |

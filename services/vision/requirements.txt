@@ -4,9 +4,9 @@ pydantic>=2.9
 numpy>=2.1
 pillow>=11.0
 shapely>=2.0
-pyproj>=3.7
-
-# Segmentation backend. Heavy: pulls torch (~2 GB) and downloads SAM weights on first use.
-segment-geospatial>=0.12
+httpx>=0.27
+opencv-python-headless>=4.10
+scikit-image>=0.24
 torch>=2.4
 torchvision>=0.19
+segment-anything>=1.0

@@ -56,7 +56,11 @@ export function toRegistry(
         villageName: jurisdiction.villageName,
       },
       groundElevation: building.groundElevationM ?? 0,
-      landUse: building.name ?? "Building footprint (OpenStreetMap)",
+      landUse:
+        building.name ??
+        (building.sourceId.startsWith("img-")
+          ? "Building footprint (satellite extraction, unverified)"
+          : "Building footprint (OpenStreetMap)"),
       holder: "Unrecorded",
       registeredOn: today,
     });

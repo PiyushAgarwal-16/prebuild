@@ -11,7 +11,7 @@ export interface BoundingBox {
 
 export interface SourceBuilding {
   sourceId: string;
-  source: "osm";
+  source: "osm" | "imagery";
   name: string | null;
   ring: Ring;
   levels: number | null;
@@ -20,6 +20,58 @@ export interface SourceBuilding {
   buildingTag: string;
   amenity: string | null;
   attribution: string;
+}
+
+export interface ExtractedFootprint {
+  ring: Ring;
+  areaM2: number;
+  confidence: number;
+}
+
+export interface ExtractionClassifier {
+  model: string | null;
+  attempted: number;
+  kept: number;
+  dropped: number;
+  error: string | null;
+}
+
+export interface ExtractionScene {
+  backend: string;
+  footprints: ExtractedFootprint[];
+  note: string;
+  classifier: ExtractionClassifier;
+  zoom: number;
+  gsdM: number;
+  tileSource: string;
+  elapsedS: number;
+}
+
+export interface ExtractionAccuracy {
+  extracted: number;
+  reference: number;
+  matched: number;
+  precision: number;
+  recall: number;
+  meanIou: number;
+  inside: number;
+  insideRate: number;
+  coverageRecall: number;
+  referenceComplete: boolean;
+}
+
+export interface ExtractionReport {
+  attempted: boolean;
+  backend: string | null;
+  tileSource: string | null;
+  gsdM: number | null;
+  elapsedS: number | null;
+  footprints: number;
+  added: number;
+  accuracy: ExtractionAccuracy | null;
+  classifier: ExtractionClassifier | null;
+  note: string | null;
+  error: string | null;
 }
 
 export interface TerrainSample {

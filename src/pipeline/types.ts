@@ -49,12 +49,50 @@ export interface Jurisdiction {
   resolved: boolean;
 }
 
+export interface ExtractionAccuracy {
+  extracted: number;
+  reference: number;
+  matched: number;
+  precision: number;
+  recall: number;
+  meanIou: number;
+  inside: number;
+  insideRate: number;
+  coverageRecall: number;
+  referenceComplete: boolean;
+}
+
+export interface ExtractionClassifier {
+  model: string | null;
+  attempted: number;
+  kept: number;
+  dropped: number;
+  error: string | null;
+}
+
+export interface ExtractionReport {
+  attempted: boolean;
+  backend: string | null;
+  tileSource: string | null;
+  gsdM: number | null;
+  elapsedS: number | null;
+  footprints: number;
+  added: number;
+  accuracy: ExtractionAccuracy | null;
+  classifier: ExtractionClassifier | null;
+  note: string | null;
+  error: string | null;
+}
+
+export type ExtractMode = "off" | "report" | "add";
+
 export interface PipelineResult {
   bbox: { south: number; west: number; north: number; east: number };
   widened: boolean;
   buildings: DerivedBuilding[];
   report: ValidationReport;
   inference: { attempted: number; applied: number; model: string | null; error: string | null };
+  extraction: ExtractionReport;
   sources: { buildings: string; terrain: string };
   jurisdiction: Jurisdiction;
 }

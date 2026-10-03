@@ -91,7 +91,7 @@ export function deriveBuilding(
     name: source.name,
     ring: source.ring,
     groundElevationM: terrain?.elevationM ?? null,
-    verticalDatum: terrain?.elevationM == null ? "undeclared" : `${terrain.dataset} (EGM96 orthometric)`,
+    verticalDatum: terrain?.elevationM == null ? "undeclared" : terrain.dataset,
     storeyHeightM: Number(storey.toFixed(2)),
     heightM: Number(heightM.toFixed(2)),
     levels,

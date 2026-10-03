@@ -54,7 +54,7 @@ function issueRecords(submission: Submission): RegisteredVolume[] {
   const records: RegisteredVolume[] = [];
 
   for (const building of submission.buildings) {
-    const base = generateBase("36", ringCentroid(building.ring));
+    const base = generateBase(submission.stateCode ?? "00", ringCentroid(building.ring));
     const taken = new Map<string, number>();
     for (const volume of building.volumes) {
       const key = `${volume.band}${volume.level}`;
